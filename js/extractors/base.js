@@ -1,0 +1,107 @@
+/* ============================================================================
+   VITALE — Extractores: helpers compartidos
+   ----------------------------------------------------------------------------
+   Funciones que los extractores usan para aplicar sus selectores y para
+   el fallback genérico.
+   ========================================================================== */
+
+window.Vitale = window.Vitale || {};
+
+Vitale.extractorBase = (function(){
+
+  const MIN_CONTENT_LENGTH = 200;
+
+  /**
+   * Aplica una lista de selectores CSS al HTML usando DOMParser.
+   * Concatena el contenido de TODOS los elementos que coincidan
+   * (útil para sitios con varios capítulos en la misma página).
+   * Devuelve el HTML combinado o null si ninguno cumple el mínimo.
+   */
+  function extractBySelectors(html, selectors){
+    try{
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      for(const selector of selectors){
+        const els = doc.querySelectorAll(selector);
+        if(els.length === 0) continue;
+
+        let combined = '';
+        let totalLen = 0;
+        els.forEach(el => {
+          const inner = el.innerHTML;
+          if(inner && inner.trim()){
+            combined += inner + '\n';
+            totalLen += inner.length;
+          }
+        });
+
+        if(totalLen >= MIN_CONTENT_LENGTH){
+          return '<div>' + combined + '</div>';
+        }
+      }
+    }catch(e){
+      console.warn('extractBySelectors falló:', e);
+    }
+    return null;
+  }
+
+  /**
+   * Extractor genérico: patrones amplios que funcionan en cualquier HTML.
+   * Última línea de defensa antes de devolver el HTML completo.
+   */
+  function extractGeneric(html){
+    const genericMatch = html.match(
+      /<(article|div)[^>]*(?:class|id)\s*=\s*"[^"]*(?:story|chapter|post|article|content)[^"]*"[^>]*>([\s\S]*?)<\/\1>/i
+    );
+    if(genericMatch && genericMatch[2] && genericMatch[2].length > 500){
+      return '<div>' + genericMatch[2] + '</div>';
+    }
+    return html;
+  }
+
+  /**
+   * Aplica un extractor registrado sobre el HTML.
+   * Orden: selectores → custom → null.
+   * Devuelve { html, method } o null si el extractor no pudo.
+   */
+  function applyExtractor(html, name){
+    const cfg = Vitale.extractors.get(name);
+    if(!cfg) return null;
+
+    if(cfg.selectors && cfg.selectors.length){
+      const result = extractBySelectors(html, cfg.selectors);
+      if(result) return { html: result, method: 'site-selector' };
+    }
+
+    if(typeof cfg.custom === 'function'){
+      try{
+        const result = cfg.custom(html);
+        if(result) return { html: result, method: 'site-custom' };
+      }catch(e){
+        console.warn('Extractor custom falló para', name, e);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Cascada completa:
+   *   1. Extractor específico del sitio (si se conoce)
+   *   2. Extractor genérico
+   * Devuelve { html, method }.
+   */
+  function extractMainContent(html, siteKey){
+    if(!html) return { html, method: 'none' };
+
+    if(siteKey && Vitale.extractors.has(siteKey)){
+      const result = applyExtractor(html, siteKey);
+      if(result) return result;
+    }
+
+    const generic = extractGeneric(html);
+    const filtered = generic.length < html.length;
+    return { html: generic, method: filtered ? 'generic' : 'none' };
+  }
+
+  return { extractBySelectors, extractGeneric, applyExtractor, extractMainContent, MIN_CONTENT_LENGTH };
+})();

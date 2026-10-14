@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vitale — HTML → Markdown</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+
+  <!-- ============================================================
+       MARCA / CABECERA
+       ============================================================ -->
+  <div class="brand">
+    <div class="brand-mark">V</div>
+    <div class="brand-text">
+      <h1>Vitale</h1>
+      <div class="tagline">HTML · MHTML → Markdown</div>
+    </div>
+  </div>
+  <p class="subtitle">Extrae el texto limpio de cualquier página web guardada y guárdalo como archivo <code>.md</code>.</p>
+
+  <!-- ============================================================
+       BARRA DE ESTADO
+       ----------------------------------------------------------------------------
+       4 pills:
+       - platformBadge → Android / iOS / Escritorio
+       - formatBadge   → HTML o MHTML
+       - siteBadge     → sitio de origen detectado (Fanfiction, AO3…)
+                         Oculto por defecto; JS lo muestra solo si reconoce
+                         el dominio del MHTML.
+       ============================================================ -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Cargando motor…</span>
+    <span class="pill" id="platformBadge" style="margin-left:auto;">Detectando…</span>
+    <span class="pill" id="formatBadge">Sin datos</span>
+    <span class="pill pill-site" id="siteBadge" style="display:none;">—</span>
+  </div>
+
+  <!-- ============================================================
+       PESTAÑAS
+       ============================================================ -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-convert">📄 Convertir HTML</button>
+    <button class="tab-btn" data-tab="tab-assist">📋 Obtener de URL</button>
+  </div>
+
+  <!-- ============================================================
+       PESTAÑA 1: CONVERTIR HTML
+       ============================================================ -->
+  <div class="tab-panel active" id="tab-convert">
+
+    <!--
+      El nombre del archivo (#fileNameDisplay) vive FUERA del <label>
+      para que el usuario pueda seleccionarlo y copiarlo sin que se
+      reabra el selector de archivos nativo.
+    -->
+    <label for="fileInput" class="upload-card" id="uploadCard">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 12 15 15"/>
+        </svg>
+        <div class="upload-arrow">↓</div>
+      </div>
+      <div class="upload-title">
+        <span id="uploadTitleText">Suelta tu archivo aquí o <span class="hl">haz clic para elegirlo</span></span>
+      </div>
+      <div class="upload-sub" id="uploadSubText">Compatible con archivos guardados desde el navegador</div>
+      <div class="upload-formats">
+        <span class="fmt fmt-special">.mhtml</span>
+        <span class="fmt">.mht</span>
+        <span class="fmt">.html</span>
+        <span class="fmt">.htm</span>
+        <span class="fmt">.txt</span>
+      </div>
+
+      <input
+        type="file"
+        id="fileInput"
+        accept=".html,.htm,.mhtml,.mht,.txt,text/html,text/plain,multipart/related,application/octet-stream"
+        class="visually-hidden-input">
+    </label>
+    <div class="file-name" id="fileNameDisplay"></div>
+
+    <!-- ============================================================
+         ÁREA DE ENTRADA Y SALIDA
+         ============================================================ -->
+    <div class="grid-2" style="margin-top:6px">
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="margin:0">Entrada (HTML o MHTML)</label>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" id="btnPaste">📋 Pegar</button>
+            <button class="btn btn-ghost btn-sm" id="btnClear">🗑 Limpiar</button>
+          </div>
+        </div>
+        <textarea id="htmlInput" placeholder="Pega aquí HTML puro o el contenido de un archivo .mhtml…">&lt;article&gt;
+  &lt;h1&gt;Hola Mundo&lt;/h1&gt;
+  &lt;p&gt;Este es un &lt;strong&gt;ejemplo&lt;/strong&gt;.&lt;/p&gt;
+&lt;/article&gt;</textarea>
+        <div class="counter" id="inputCounter">0 caracteres</div>
+      </div>
+
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <label style="margin:0">Markdown resultante</label>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" id="btnCopyMd">📋 Copiar</button>
+          </div>
+        </div>
+        <div class="output-box" id="mdOutput"></div>
+        <div class="counter" id="outputCounter">0 caracteres</div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         BOTONES DE ACCIÓN PRINCIPALES
+         ============================================================ -->
+    <div class="btn-row main-actions">
+      <button class="btn btn-primary" id="btnConvert">⚡ Convertir a Markdown</button>
+      <button class="btn btn-success" id="btnDownloadMd" disabled>💾 Descargar .md</button>
+    </div>
+
+    <div class="info" id="convertInfo"></div>
+    <div id="convertAlert" class="alert"></div>
+  </div>
+
+  <!-- ============================================================
+       PESTAÑA 2: OBTENER DE URL
+       ============================================================ -->
+  <div class="tab-panel" id="tab-assist">
+    <p style="margin-bottom:18px;color:var(--text-dim);font-size:.9rem">
+      Los navegadores no pueden descargar páginas externas directamente (CORS). Además, en móvil Android los enlaces a ciertas webs se abren en su app instalada en lugar del navegador.
+    </p>
+
+    <label>URL de la página</label>
+    <input type="url" id="assistUrl" placeholder="https://ejemplo.com/articulo" value="">
+
+    <div class="btn-row" style="margin-top:16px">
+      <button class="btn btn-primary" id="btnCopyUrl">📋 1. Copiar URL</button>
+      <button class="btn" id="btnOpenPage">🌐 Intentar abrir</button>
+      <button class="btn" id="btnGoConvert">➡️ 2. Ir a pegar HTML</button>
+    </div>
+
+    <div class="alert alert-info show" style="margin-top:18px">
+      💡 <b>En Android</b> usa "Copiar URL" y pégala manualmente en Chrome/Firefox para evitar que el sistema la redirija a la app.
+    </div>
+
+    <div class="steps" id="assistSteps"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: elegir nombre del archivo a descargar
+     ============================================================ -->
+<div class="modal-backdrop" id="downloadModal">
+  <div class="modal">
+    <h3>💾 Guardar archivo Markdown</h3>
+    <p>Elige el nombre con el que quieres guardar el archivo. Se añadirá la extensión <code>.md</code> automáticamente.</p>
+
+    <label>Nombre del archivo</label>
+    <div class="modal-suffix">
+      <input type="text" id="filenameInput" placeholder="vitale" autocomplete="off">
+    </div>
+    <div class="modal-preview">
+      Se guardará como: <b id="filenamePreview">vitale.md</b>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" id="btnCancelDownload">Cancelar</button>
+      <button class="btn btn-success" id="btnConfirmDownload">💾 Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCRIPTS — cargados en orden de dependencia
+     ----------------------------------------------------------------------------
+     Todos comparten el namespace global window.Vitale.
+     El orden es importante:
+       1. Core        → utilidades sin dependencias
+       2. Extractores → registry + base primero, luego cada sitio
+       3. Servicios   → dependen de core y de extractores
+       4. Paneles     → dependen de todo lo anterior
+       5. main.js     → bootstrap final
+     ============================================================ -->
+
+<!-- 1. Core -->
+<script src="js/core/utils.js"></script>
+<script src="js/core/mhtml-parser.js"></script>
+<script src="js/core/charset.js"></script>
+
+<!-- 2. Extractores (registry y base primero) -->
+<script src="js/extractors/registry.js"></script>
+<script src="js/extractors/base.js"></script>
+<script src="js/extractors/fanfiction.js"></script>
+<script src="js/extractors/ao3.js"></script>
+<script src="js/extractors/webnovel.js"></script>
+<script src="js/extractors/royalroad.js"></script>
+<script src="js/extractors/wikipedia.js"></script>
+<script src="js/extractors/substack.js"></script>
+<script src="js/extractors/blogger.js"></script>
+
+<!-- 3. Servicios -->
+<script src="js/platform.js"></script>
+<script src="js/site-detector.js"></script>
+<script src="js/mdream-loader.js"></script>
+<script src="js/download-modal.js"></script>
+
+<!-- 4. Paneles -->
+<script src="js/convert-panel.js"></script>
+<script src="js/assist-panel.js"></script>
+
+<!-- 5. Bootstrap -->
+<script src="js/main.js"></script>
+</body>
+</html>

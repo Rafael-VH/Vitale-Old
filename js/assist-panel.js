@@ -1,0 +1,85 @@
+/* ============================================================================
+   VITALE — Panel "Obtener de URL"
+   ========================================================================== */
+
+window.Vitale = window.Vitale || {};
+
+Vitale.assistPanel = (function(){
+
+  /**
+   * Inserta un aviso dinámico en la lista de pasos.
+   * Elimina los anteriores para que no se apilen.
+   */
+  function showMessage(type, msg){
+    const el = document.getElementById('assistSteps');
+    el.querySelectorAll('.assist-dynamic').forEach(n => n.remove());
+
+    const div = document.createElement('div');
+    div.className = 'alert alert-' + type + ' show assist-dynamic';
+    div.style.margin = '0 0 15px 0';
+    div.innerHTML = msg;
+    el.insertBefore(div, el.firstChild);
+  }
+
+  function setup(){
+    // Copiar URL
+    document.getElementById('btnCopyUrl').addEventListener('click', async () => {
+      const url = document.getElementById('assistUrl').value.trim();
+      if(!url) return alert('Introduce una URL.');
+
+      const ok = await Vitale.utils.copyToClipboard(url);
+      if(ok){
+        let msg = '📋 <b>URL copiada al portapapeles.</b><br><br>';
+        const P = Vitale.platform.PLATFORM;
+
+        if(P === 'android'){
+          msg += '1️⃣ Abre Chrome → pega la URL → Enter.<br>' +
+                 '2️⃣ Menú ⋮ → <b>"Descargar página"</b>.<br>' +
+                 '3️⃣ Vuelve aquí y usa el panel de carga.';
+        } else if(P === 'ios'){
+          msg += '1️⃣ Abre Safari → pega la URL → Enter.<br>' +
+                 '2️⃣ Compartir → <b>"Guardar en Archivos"</b>.<br>' +
+                 '3️⃣ Vuelve aquí y usa el panel de carga.';
+        } else {
+          msg += '1️⃣ Pega la URL en el navegador.<br>' +
+                 '2️⃣ <b>Ctrl+U</b> → <b>Ctrl+A</b> → <b>Ctrl+C</b>.<br>' +
+                 '3️⃣ Vuelve aquí y pulsa <b>"Pegar"</b>.';
+        }
+
+        showMessage('ok', msg);
+        const el = document.getElementById('assistSteps');
+        window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
+      }else{
+        alert('⚠️ No se pudo copiar. Selecciona el texto del campo manualmente.');
+      }
+    });
+
+    // Intentar abrir la URL
+    document.getElementById('btnOpenPage').addEventListener('click', () => {
+      const url = document.getElementById('assistUrl').value.trim();
+      if(!url) return alert('Introduce una URL.');
+
+      const opened = window.open(url, '_blank', 'noopener');
+
+      if(!opened){
+        alert('⚠️ El navegador bloqueó la apertura. Usa "Copiar URL" y pégala manualmente.');
+      } else if(Vitale.platform.PLATFORM === 'android'){
+        setTimeout(() => {
+          showMessage('warn',
+            '⚠️ Si se abrió la app en lugar del navegador, ciérrala y usa <b>"Copiar URL"</b>. ' +
+            'Android asocia ciertos dominios a sus apps por defecto.');
+        }, 500);
+      }
+    });
+
+    // Ir a la pestaña Convertir
+    document.getElementById('btnGoConvert').addEventListener('click', () => {
+      document.querySelector('.tab-btn[data-tab="tab-convert"]').click();
+      setTimeout(() => {
+        document.getElementById('uploadCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    });
+  }
+
+  return { setup };
+})();
