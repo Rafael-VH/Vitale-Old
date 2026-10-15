@@ -8,12 +8,18 @@ window.Vitale = window.Vitale || {};
 
 Vitale.utils = (function(){
 
-  /** Escapa caracteres HTML peligrosos. */
+  /**
+   * Escapa caracteres HTML peligrosos.
+   * El `&` va primero para no re-escapar entidades ya generadas.
+   * Cubre también comillas, así es seguro si algún día se usa en un atributo.
+   */
   function esc(s){
     return String(s)
       .replace(/&/g,'&amp;')
       .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;');
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
   }
 
   /** Timer compartido para autocerrar alertas de éxito. */
@@ -43,6 +49,24 @@ Vitale.utils = (function(){
   }
 
   /**
+   * Oculta una alerta y limpia su contenido.
+   * Simétrico de alertMsg: concentra aquí el className 'alert' para que
+   * ningún panel tenga que tocar className a mano.
+   */
+  function clearAlert(id){
+    const a = document.getElementById(id);
+    if(!a) return;
+
+    if(_alertTimer){
+      clearTimeout(_alertTimer);
+      _alertTimer = null;
+    }
+
+    a.className = 'alert';
+    a.innerHTML = '';
+  }
+
+  /**
    * Actualiza el contador de caracteres de un campo.
    * Soporta textarea/input (.value) y div (.textContent).
    */
@@ -68,8 +92,9 @@ Vitale.utils = (function(){
       return true;
     }catch(e){}
 
+    let ta = null;
     try{
-      const ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.value = text;
       ta.style.position = 'fixed';
       ta.style.top = '0';
@@ -79,11 +104,12 @@ Vitale.utils = (function(){
       document.body.appendChild(ta);
       ta.select();
       ta.setSelectionRange(0, text.length);
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
+      return document.execCommand('copy');
     }catch(e){
       return false;
+    }finally{
+      // En finally: si `select` o `execCommand` lanzan, el nodo se quita igual.
+      if(ta && ta.parentNode) ta.parentNode.removeChild(ta);
     }
   }
 
@@ -114,5 +140,5 @@ Vitale.utils = (function(){
     if(btn) btn.disabled = !enabled;
   }
 
-  return { esc, alertMsg, updateCounter, copyToClipboard, downloadFile, setDownloadEnabled };
+  return { esc, alertMsg, clearAlert, updateCounter, copyToClipboard, downloadFile, setDownloadEnabled };
 })();

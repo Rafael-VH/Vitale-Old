@@ -216,7 +216,7 @@ Vitale.convertPanel = (function(){
       Vitale.utils.updateCounter('htmlInput', 'inputCounter');
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
       Vitale.siteDetector.updateFormatBadge();
-      document.getElementById('convertAlert').className = 'alert';
+      Vitale.utils.clearAlert('convertAlert');
       document.getElementById('convertInfo').textContent = '';
       Vitale.utils.setDownloadEnabled(false);
     });
