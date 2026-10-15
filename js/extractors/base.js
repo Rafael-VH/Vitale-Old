@@ -46,14 +46,23 @@ Vitale.extractorBase = (function(){
 
   /**
    * Extractor genérico: patrones amplios que funcionan en cualquier HTML.
+   * Usa DOMParser para tolerar comillas simples o dobles y anidamiento real:
+   * un regex perezoso cortaría en el primer `</div>` y perdería contenido.
    * Última línea de defensa antes de devolver el HTML completo.
    */
   function extractGeneric(html){
-    const genericMatch = html.match(
-      /<(article|div)[^>]*(?:class|id)\s*=\s*"[^"]*(?:story|chapter|post|article|content)[^"]*"[^>]*>([\s\S]*?)<\/\1>/i
-    );
-    if(genericMatch && genericMatch[2] && genericMatch[2].length > 500){
-      return '<div>' + genericMatch[2] + '</div>';
+    try{
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      for(const el of doc.querySelectorAll('article, div')){
+        const ident = (el.getAttribute('class') || '') + ' ' + (el.id || '');
+        if(!/(story|chapter|post|article|content)/i.test(ident)) continue;
+        const inner = el.innerHTML;
+        if(inner && inner.length > 500){
+          return '<div>' + inner + '</div>';
+        }
+      }
+    }catch(e){
+      console.warn('extractGeneric falló:', e);
     }
     return html;
   }
