@@ -181,7 +181,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 5 | ✅ **RESUELTA** | `core/charset.js` | `readFileSmart` busca `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después de los headers MIME → detección falla | **Hecho**: era el mismo defecto que el #4. Las partes van en quoted-printable/base64 (ASCII-safe), así que los bytes sobreviven intactos a la lectura como UTF-8 y el charset correcto se aplica por parte. Cubierto por `tests/mhtml-charset.test.js` |
 | 6 | ✅ RESUELTA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
 | 7 | ✅ RESUELTA | `assist-panel.js:62` | `window.open(url)` sin validar esquema; `javascript:`/`data:` son controlables por el usuario | Exigir `^https?://` antes de abrir/copiar |
-| 8 | MEDIA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
+| 8 | ✅ RESUELTA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
 | 9 | BAJA | `extractors/base.js:52` | Falsos negativos con `<article>`/`<main>` sin class/id | Ampliar el genérico |
 | 10 | BAJA | `core/utils.js:96` | BOM UTF-8 incondicional ensucia el inicio en algunas tools Markdown | Hacer el BOM opcional |
 | 11 | BAJA | `core/utils.js:30` | `esc()` no escapa comillas: seguro solo porque hoy todo uso es contenido, no atributo | Escapar comillas si algún día se usa en atributos |
@@ -213,7 +213,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - **Escapar** todo valor dinámico que vaya a `innerHTML` con `Vitale.utils.esc()`.
 - **Registrar** scripts en `index.html` en la sección correcta según el orden de dependencia.
 - **Extraer** el sitio nuevo con la receta de [Cómo agregar un extractor](#cómo-agregar-un-extractor-nuevo).
-- No hay linter. Los checks automáticos viven en `tests/` y se corren sueltos, sin framework, cada uno sale con código 1 si falla: `node tests/mhtml-charset.test.js`, `node tests/prototype-safety.test.js`, `node tests/url-scheme-safety.test.js`. El resto se verifica manualmente en el navegador.
+- No hay linter. Los checks automáticos viven en `tests/` y se corren sueltos, sin framework, cada uno sale con código 1 si falla: `node tests/mhtml-charset.test.js`, `node tests/prototype-safety.test.js`, `node tests/url-scheme-safety.test.js`, `node tests/utils-hardening.test.js`. El resto se verifica manualmente en el navegador.
 
 ---
 
@@ -225,3 +225,4 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - [x] Respetar el charset declarado en partes MHTML (bugs #4/#5).
 - [x] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
 - [x] Validar esquema de URL en el asistente (bug #7).
+- [x] Quitar el `<textarea>` del fallback de portapapeles en un `finally` (bug #8).

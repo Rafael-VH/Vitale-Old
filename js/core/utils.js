@@ -68,8 +68,9 @@ Vitale.utils = (function(){
       return true;
     }catch(e){}
 
+    let ta = null;
     try{
-      const ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.value = text;
       ta.style.position = 'fixed';
       ta.style.top = '0';
@@ -79,11 +80,12 @@ Vitale.utils = (function(){
       document.body.appendChild(ta);
       ta.select();
       ta.setSelectionRange(0, text.length);
-      const ok = document.execCommand('copy');
-      document.body.removeChild(ta);
-      return ok;
+      return document.execCommand('copy');
     }catch(e){
       return false;
+    }finally{
+      // En finally: si `select` o `execCommand` lanzan, el nodo se quita igual.
+      if(ta && ta.parentNode) ta.parentNode.removeChild(ta);
     }
   }
 
