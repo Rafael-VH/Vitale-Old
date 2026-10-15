@@ -177,8 +177,8 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 1 | ✅ **RESUELTA** | `mdream-loader.js` | Motor desde CDN con `@latest`, sin pin ni SRI ni fallback offline. Si jsdelivr cae o cambia una release, la app queda inservible; además ejecuta código de terceros con privilegios de la página | **Hecho** (change `pin-mdream-engine-version`): pin `@mdream/js@2.0.3` + fallback esm.sh + error claro. SRI sigue siendo imposible en un `import()` dinámico |
 | 2 | ✅ **RESUELTA** | `download-modal.js` | `confirm()` **no** revalidaba el guard de "sin Markdown / salida de error" (solo lo hacía `open()`). Verificado con `#mdOutput="❌ Error: boom"`: descargaba el error como `vitale.md` | **Hecho**: guard centralizado en `markdownOrWarn()`, usado por `open()` y `confirm()`; `confirm()` también cierra el modal para que se vea el aviso. RED→GREEN verificado en navegador |
 | 3 | ✅ **RESUELTA** | `extractors/base.js` | `extractGeneric` fallaba con atributos entre comillas simples y con `<div>` anidados (cortaba en el primer `</div>` y perdía contenido) | **Hecho**: reescrito con `DOMParser` — recorre `article, div` en orden de documento y valida `class`/`id`. RED→GREEN verificado en navegador: comillas simples, anidamiento, `<article>` y match por `id` |
-| 4 | ALTA | `core/mhtml-parser.js:40,50` | Ignora el charset declarado en la parte MHTML: siempre decodifica UTF-8 → mojibake en `windows-1252`/`iso-8859-1` | Leer `charset=` de los headers de la parte y pasarlo a `TextDecoder` |
-| 5 | ALTA | `core/charset.js:23,27` | `readFileSmart` busca `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después de los headers MIME → detección falla | Para MHTML, decodificar la parte HTML con su propio charset |
+| 4 | ✅ **RESUELTA** | `core/mhtml-parser.js` | Ignoraba el charset declarado en la parte MHTML: siempre decodificaba UTF-8 → mojibake en `windows-1252`/`iso-8859-1` | **Hecho**: se lee `charset=` del `Content-Type` de la parte y se pasa a un `safeDecode()` (cae a UTF-8 si el label no es válido). Verificado con quoted-printable y base64 en windows-1252 e iso-8859-1 |
+| 5 | ✅ **RESUELTA** | `core/charset.js` | `readFileSmart` busca `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después de los headers MIME → detección falla | **Hecho**: era el mismo defecto que el #4. Las partes van en quoted-printable/base64 (ASCII-safe), así que los bytes sobreviven intactos a la lectura como UTF-8 y el charset correcto se aplica por parte. Cubierto por `tests/mhtml-charset.test.js` |
 | 6 | MEDIA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
 | 7 | MEDIA | `assist-panel.js:62` | `window.open(url)` sin validar esquema; `javascript:`/`data:` son controlables por el usuario | Exigir `^https?://` antes de abrir/copiar |
 | 8 | MEDIA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
@@ -186,6 +186,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 10 | BAJA | `core/utils.js:96` | BOM UTF-8 incondicional ensucia el inicio en algunas tools Markdown | Hacer el BOM opcional |
 | 11 | BAJA | `core/utils.js:30` | `esc()` no escapa comillas: seguro solo porque hoy todo uso es contenido, no atributo | Escapar comillas si algún día se usa en atributos |
 | 12 | BAJA | `convert-panel.js:219` | `btnClear` toca `className` directo sin pasar por `alertMsg` (bypass del API) | Usar el helper |
+| 13 | BAJA | `core/mhtml-parser.js:94,95` | Si una parte HTML no declara `Content-Transfer-Encoding`, no se decodifica nada (default `7bit` de RFC 2045) y las secuencias `=XX` quedan crudas en el HTML. Algunos generadores de MHTML omiten ese header | Detectar QP por heurística (`/=[0-9A-Fa-f]{2}/`) solo cuando no hay encoding declarado; riesgo de falsos positivos en textos con `=` |
 
 ### Notas de revisión
 
@@ -212,7 +213,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - **Escapar** todo valor dinámico que vaya a `innerHTML` con `Vitale.utils.esc()`.
 - **Registrar** scripts en `index.html` en la sección correcta según el orden de dependencia.
 - **Extraer** el sitio nuevo con la receta de [Cómo agregar un extractor](#cómo-agregar-un-extractor-nuevo).
-- No hay linter ni tests; verifica manualmente en el navegador.
+- No hay linter. El único check automático es `node tests/mhtml-charset.test.js` (charset por parte en MHTML); el resto se verifica manualmente en el navegador.
 
 ---
 
@@ -221,6 +222,6 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - [x] ~~Fijar la versión del motor `@mdream/js` (bug #1 — máxima prioridad de fiabilidad).~~ **Resuelto**: pin a `@mdream/js@2.0.3` + fallback esm.sh (change `pin-mdream-engine-version`).
 - [x] Revalidar el guard en `confirm()` (bug #2).
 - [x] Reemplazar el regex genérico por `DOMParser` (bug #3).
-- [ ] Respetar el charset declarado en partes MHTML (bugs #4/#5).
+- [x] Respetar el charset declarado en partes MHTML (bugs #4/#5).
 - [ ] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
 - [ ] Validar esquema de URL en el asistente (bug #7).

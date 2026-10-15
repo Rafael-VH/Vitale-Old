@@ -18,10 +18,25 @@ Vitale.mhtml = (function(){
   }
 
   /**
-   * Decodifica quoted-printable acumulando bytes y decodificando como
-   * UTF-8 de una sola pasada. Así se preservan los caracteres multi-byte.
+   * Decodifica bytes con el charset que declara la parte. TextDecoder lanza
+   * RangeError si el label no es válido, así que caemos a UTF-8 en vez de
+   * romper la conversión entera.
    */
-  function decodeQuotedPrintable(str){
+  function safeDecode(bytes, charset){
+    try{
+      return new TextDecoder(charset || 'utf-8', { fatal: false }).decode(bytes);
+    }catch(e){
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    }
+  }
+
+  /**
+   * Decodifica quoted-printable acumulando bytes y decodificando de una sola
+   * pasada con el charset declarado por la parte (por defecto UTF-8). Así se
+   * preservan los multi-byte de UTF-8 y también los bytes altos de
+   * windows-1252/iso-8859-1 (antes se forzaba UTF-8 → mojibake).
+   */
+  function decodeQuotedPrintable(str, charset){
     const cleaned = str.replace(/=\r?\n/g, '');
     const bytes = [];
 
@@ -37,17 +52,17 @@ Vitale.mhtml = (function(){
       bytes.push(cleaned.charCodeAt(i) & 0xFF);
     }
 
-    return new TextDecoder('utf-8', { fatal: false }).decode(new Uint8Array(bytes));
+    return safeDecode(new Uint8Array(bytes), charset);
   }
 
-  /** Decodifica base64 a texto UTF-8. */
-  function decodeBase64(str){
+  /** Decodifica base64 a texto usando el charset declarado por la parte. */
+  function decodeBase64(str, charset){
     try{
       const clean = str.replace(/\s/g, '');
       const bin = atob(clean);
       const bytes = new Uint8Array(bin.length);
       for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      return new TextDecoder('utf-8').decode(bytes);
+      return safeDecode(bytes, charset);
     }catch(e){
       return str;
     }
@@ -91,8 +106,14 @@ Vitale.mhtml = (function(){
       const encMatch = headers.match(/Content-Transfer-Encoding:\s*(\S+)/i);
       const encoding = encMatch ? encMatch[1].toLowerCase() : '';
 
-      if(encoding === 'base64') body = decodeBase64(body);
-      else if(encoding === 'quoted-printable') body = decodeQuotedPrintable(body);
+      // El charset declarado en el Content-Type de ESTA parte manda sobre el
+      // del archivo completo: en MHTML cada parte puede traer el suyo.
+      const ctLine = headers.match(/Content-Type:\s*([^\r\n]+)/i);
+      const csMatch = ctLine && ctLine[1].match(/charset\s*=\s*"?([\w-]+)/i);
+      const charset = csMatch ? csMatch[1].toLowerCase() : 'utf-8';
+
+      if(encoding === 'base64') body = decodeBase64(body, charset);
+      else if(encoding === 'quoted-printable') body = decodeQuotedPrintable(body, charset);
 
       if(body.length > bestHtml.length) bestHtml = body;
     }
