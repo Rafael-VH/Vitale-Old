@@ -49,13 +49,17 @@ Vitale.extractorBase = (function(){
    * Usa DOMParser para tolerar comillas simples o dobles y anidamiento real:
    * un regex perezoso cortaría en el primer `</div>` y perdería contenido.
    * Última línea de defensa antes de devolver el HTML completo.
+   *
+   * `<article>` y `<main>` ya son contenedores semánticos de contenido, así que
+   * no se les exige class/id: pedirlo era el falso negativo del bug #9.
    */
   function extractGeneric(html){
     try{
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      for(const el of doc.querySelectorAll('article, div')){
+      for(const el of doc.querySelectorAll('article, main, div')){
+        const semantic = el.tagName === 'ARTICLE' || el.tagName === 'MAIN';
         const ident = (el.getAttribute('class') || '') + ' ' + (el.id || '');
-        if(!/(story|chapter|post|article|content)/i.test(ident)) continue;
+        if(!semantic && !/(story|chapter|post|article|content)/i.test(ident)) continue;
         const inner = el.innerHTML;
         if(inner && inner.length > 500){
           return '<div>' + inner + '</div>';
