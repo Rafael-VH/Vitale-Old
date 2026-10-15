@@ -176,7 +176,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | --- | --- | --- | --- | --- |
 | 1 | ✅ **RESUELTA** | `mdream-loader.js` | Motor desde CDN con `@latest`, sin pin ni SRI ni fallback offline. Si jsdelivr cae o cambia una release, la app queda inservible; además ejecuta código de terceros con privilegios de la página | **Hecho** (change `pin-mdream-engine-version`): pin `@mdream/js@2.0.3` + fallback esm.sh + error claro. SRI sigue siendo imposible en un `import()` dinámico |
 | 2 | ✅ **RESUELTA** | `download-modal.js` | `confirm()` **no** revalidaba el guard de "sin Markdown / salida de error" (solo lo hacía `open()`). Verificado con `#mdOutput="❌ Error: boom"`: descargaba el error como `vitale.md` | **Hecho**: guard centralizado en `markdownOrWarn()`, usado por `open()` y `confirm()`; `confirm()` también cierra el modal para que se vea el aviso. RED→GREEN verificado en navegador |
-| 3 | ALTA | `extractors/base.js:52` | `extractGeneric` falla con atributos entre comillas simples y con `<div>` anidados (corta en el primer `</div>` y pierde contenido) | Usar `DOMParser` (ya disponible) en vez de regex |
+| 3 | ✅ **RESUELTA** | `extractors/base.js` | `extractGeneric` fallaba con atributos entre comillas simples y con `<div>` anidados (cortaba en el primer `</div>` y perdía contenido) | **Hecho**: reescrito con `DOMParser` — recorre `article, div` en orden de documento y valida `class`/`id`. RED→GREEN verificado en navegador: comillas simples, anidamiento, `<article>` y match por `id` |
 | 4 | ALTA | `core/mhtml-parser.js:40,50` | Ignora el charset declarado en la parte MHTML: siempre decodifica UTF-8 → mojibake en `windows-1252`/`iso-8859-1` | Leer `charset=` de los headers de la parte y pasarlo a `TextDecoder` |
 | 5 | ALTA | `core/charset.js:23,27` | `readFileSmart` busca `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después de los headers MIME → detección falla | Para MHTML, decodificar la parte HTML con su propio charset |
 | 6 | MEDIA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
@@ -220,7 +220,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 
 - [x] ~~Fijar la versión del motor `@mdream/js` (bug #1 — máxima prioridad de fiabilidad).~~ **Resuelto**: pin a `@mdream/js@2.0.3` + fallback esm.sh (change `pin-mdream-engine-version`).
 - [x] Revalidar el guard en `confirm()` (bug #2).
-- [ ] Reemplazar el regex genérico por `DOMParser` (bug #3).
+- [x] Reemplazar el regex genérico por `DOMParser` (bug #3).
 - [ ] Respetar el charset declarado en partes MHTML (bugs #4/#5).
 - [ ] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
 - [ ] Validar esquema de URL en el asistente (bug #7).
