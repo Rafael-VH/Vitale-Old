@@ -182,7 +182,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 6 | ✅ RESUELTA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
 | 7 | ✅ RESUELTA | `assist-panel.js:62` | `window.open(url)` sin validar esquema; `javascript:`/`data:` son controlables por el usuario | Exigir `^https?://` antes de abrir/copiar |
 | 8 | ✅ RESUELTA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
-| 9 | BAJA | `extractors/base.js:52` | Falsos negativos con `<article>`/`<main>` sin class/id | Ampliar el genérico |
+| 9 | ✅ RESUELTA | `extractors/base.js:53` | Falsos negativos con `<article>`/`<main>` sin class/id | Los semánticos no exigen class/id + `main` al selector |
 | 10 | BAJA | `core/utils.js:96` | BOM UTF-8 incondicional ensucia el inicio en algunas tools Markdown | Hacer el BOM opcional |
 | 11 | ✅ RESUELTA | `core/utils.js:12` | `esc()` no escapa comillas: seguro solo porque hoy todo uso es contenido, no atributo | Escapar comillas (`&quot;` / `&#39;`) |
 | 12 | ✅ RESUELTA | `convert-panel.js:219` | `btnClear` tocaba `className` directo sin pasar por el API de alertas | Nuevo helper `clearAlert()` en `utils` |
@@ -213,7 +213,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - **Escapar** todo valor dinámico que vaya a `innerHTML` con `Vitale.utils.esc()`.
 - **Registrar** scripts en `index.html` en la sección correcta según el orden de dependencia.
 - **Extraer** el sitio nuevo con la receta de [Cómo agregar un extractor](#cómo-agregar-un-extractor-nuevo).
-- No hay linter. Los checks automáticos viven en `tests/` y se corren sueltos, sin framework, cada uno sale con código 1 si falla: `node tests/mhtml-charset.test.js`, `node tests/prototype-safety.test.js`, `node tests/url-scheme-safety.test.js`, `node tests/utils-hardening.test.js`. El resto se verifica manualmente en el navegador.
+- No hay linter. Los checks automáticos viven en `tests/` y se corren sueltos, sin framework, cada uno sale con código 1 si falla: `node tests/mhtml-charset.test.js`, `node tests/prototype-safety.test.js`, `node tests/url-scheme-safety.test.js`, `node tests/utils-hardening.test.js`, `node tests/generic-semantic.test.js`. El resto se verifica manualmente en el navegador.
 
 ---
 
@@ -228,3 +228,4 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - [x] Quitar el `<textarea>` del fallback de portapapeles en un `finally` (bug #8).
 - [x] Escapar comillas en `esc()` (bug #11).
 - [x] Centralizar el ocultado de alertas en `clearAlert()` (bug #12).
+- [x] Usar `<article>`/`<main>` sin class/id en el extractor genérico (bug #9).
