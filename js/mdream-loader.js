@@ -9,25 +9,37 @@ Vitale.mdream = (function(){
   let htmlToMarkdown = null;
   let loaded = false;
 
+  // Fuentes ordenadas del motor. Se intentan en orden hasta obtener una válida.
+  // Versión fijada por seguridad de suministro (no se adoptan releases nuevas sin control).
+  const SOURCES = [
+    'https://cdn.jsdelivr.net/npm/@mdream/js@2.0.3/+esm',
+    'https://esm.sh/@mdream/js@2.0.3'
+  ];
+
   /** Carga mdream desde el CDN. Actualiza el estado visual. */
   async function load(){
     const dot = document.getElementById('statusDot');
     const txt = document.getElementById('statusText');
     dot.classList.add('loading');
 
-    try{
-      const core = await import('https://cdn.jsdelivr.net/npm/@mdream/js@latest/+esm');
-      htmlToMarkdown = core.htmlToMarkdown;
-      if(typeof htmlToMarkdown !== 'function') throw new Error('htmlToMarkdown no disponible');
+    for(const url of SOURCES){
+      try{
+        const core = await import(url);
+        if(typeof core.htmlToMarkdown !== 'function') throw new Error('htmlToMarkdown no disponible');
 
-      loaded = true;
-      dot.classList.remove('loading');
-      dot.classList.add('ready');
-      txt.textContent = 'Vitale listo';
-    }catch(err){
-      dot.classList.remove('loading');
-      txt.textContent = '❌ Error al cargar: ' + err.message;
+        htmlToMarkdown = core.htmlToMarkdown;
+        loaded = true;
+        dot.classList.remove('loading');
+        dot.classList.add('ready');
+        txt.textContent = 'Vitale listo';
+        return;
+      }catch(err){
+        // Fuente no disponible o inválida: se intenta la siguiente.
+      }
     }
+
+    dot.classList.remove('loading');
+    txt.textContent = '❌ Error al cargar: no se pudo cargar el motor desde ninguna fuente';
   }
 
   function isLoaded(){ return loaded; }
