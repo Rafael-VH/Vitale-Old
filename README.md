@@ -179,7 +179,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 3 | ✅ **RESUELTA** | `extractors/base.js` | `extractGeneric` fallaba con atributos entre comillas simples y con `<div>` anidados (cortaba en el primer `</div>` y perdía contenido) | **Hecho**: reescrito con `DOMParser` — recorre `article, div` en orden de documento y valida `class`/`id`. RED→GREEN verificado en navegador: comillas simples, anidamiento, `<article>` y match por `id` |
 | 4 | ✅ **RESUELTA** | `core/mhtml-parser.js` | Ignoraba el charset declarado en la parte MHTML: siempre decodificaba UTF-8 → mojibake en `windows-1252`/`iso-8859-1` | **Hecho**: se lee `charset=` del `Content-Type` de la parte y se pasa a un `safeDecode()` (cae a UTF-8 si el label no es válido). Verificado con quoted-printable y base64 en windows-1252 e iso-8859-1 |
 | 5 | ✅ **RESUELTA** | `core/charset.js` | `readFileSmart` busca `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después de los headers MIME → detección falla | **Hecho**: era el mismo defecto que el #4. Las partes van en quoted-printable/base64 (ASCII-safe), así que los bytes sobreviven intactos a la lectura como UTF-8 y el charset correcto se aplica por parte. Cubierto por `tests/mhtml-charset.test.js` |
-| 6 | MEDIA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
+| 6 | ✅ RESUELTA | `extractors/registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `map` es `{}`; `detectSiteFromUrl('http://constructor/')` devuelve una función | `Object.create(null)` + `hasOwnProperty` |
 | 7 | MEDIA | `assist-panel.js:62` | `window.open(url)` sin validar esquema; `javascript:`/`data:` son controlables por el usuario | Exigir `^https?://` antes de abrir/copiar |
 | 8 | MEDIA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
 | 9 | BAJA | `extractors/base.js:52` | Falsos negativos con `<article>`/`<main>` sin class/id | Ampliar el genérico |
@@ -223,5 +223,5 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - [x] Revalidar el guard en `confirm()` (bug #2).
 - [x] Reemplazar el regex genérico por `DOMParser` (bug #3).
 - [x] Respetar el charset declarado en partes MHTML (bugs #4/#5).
-- [ ] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
+- [x] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
 - [ ] Validar esquema de URL en el asistente (bug #7).

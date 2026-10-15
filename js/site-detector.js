@@ -48,7 +48,7 @@ Vitale.siteDetector = (function(){
       const host = new URL(url).hostname.toLowerCase();
       const map = Vitale.extractors.allDomains();
 
-      if(map[host]) return map[host];
+      if(Object.hasOwn(map, host)) return map[host];
 
       for(const [domain, key] of Object.entries(map)){
         if(host === domain || host.endsWith('.' + domain)) return key;
