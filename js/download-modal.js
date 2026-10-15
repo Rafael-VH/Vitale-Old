@@ -22,11 +22,21 @@ Vitale.downloadModal = (function(){
     preview.textContent = base + '.md';
   }
 
-  function open(){
+  /**
+   * Lee el Markdown actual y valida que sea descargable.
+   * Devuelve el texto, o null (avisando al usuario) si no lo es.
+   */
+  function markdownOrWarn(){
     const md = document.getElementById('mdOutput').textContent;
     if(!md || !md.trim() || md.startsWith('❌')){
-      return Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que descargar.', 'warn');
+      Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que descargar.', 'warn');
+      return null;
     }
+    return md;
+  }
+
+  function open(){
+    if(markdownOrWarn() === null) return;
 
     let suggested = DEFAULT_FILENAME;
     const fileNameDisplay = document.getElementById('fileNameDisplay').textContent;
@@ -50,9 +60,11 @@ Vitale.downloadModal = (function(){
   }
 
   function confirm(){
+    const md = markdownOrWarn();
+    if(md === null){ close(); return; }
+
     const base = sanitizeFilename(input.value) || DEFAULT_FILENAME;
     const finalName = base + '.md';
-    const md = document.getElementById('mdOutput').textContent;
 
     try{
       Vitale.utils.downloadFile(finalName, md);
