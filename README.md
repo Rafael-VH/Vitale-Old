@@ -184,7 +184,7 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 | 8 | ✅ RESUELTA | `core/utils.js:82` | El fallback de portapapeles deja el `<textarea>` en el DOM si `execCommand` lanza | Quitar el nodo en un `finally` |
 | 9 | BAJA | `extractors/base.js:52` | Falsos negativos con `<article>`/`<main>` sin class/id | Ampliar el genérico |
 | 10 | BAJA | `core/utils.js:96` | BOM UTF-8 incondicional ensucia el inicio en algunas tools Markdown | Hacer el BOM opcional |
-| 11 | BAJA | `core/utils.js:30` | `esc()` no escapa comillas: seguro solo porque hoy todo uso es contenido, no atributo | Escapar comillas si algún día se usa en atributos |
+| 11 | ✅ RESUELTA | `core/utils.js:12` | `esc()` no escapa comillas: seguro solo porque hoy todo uso es contenido, no atributo | Escapar comillas (`&quot;` / `&#39;`) |
 | 12 | BAJA | `convert-panel.js:219` | `btnClear` toca `className` directo sin pasar por `alertMsg` (bypass del API) | Usar el helper |
 | 13 | BAJA | `core/mhtml-parser.js:94,95` | Si una parte HTML no declara `Content-Transfer-Encoding`, no se decodifica nada (default `7bit` de RFC 2045) y las secuencias `=XX` quedan crudas en el HTML. Algunos generadores de MHTML omiten ese header | Detectar QP por heurística (`/=[0-9A-Fa-f]{2}/`) solo cuando no hay encoding declarado; riesgo de falsos positivos en textos con `=` |
 
@@ -226,3 +226,4 @@ Deuda técnica priorizada (auditoría independiente). Sirve como backlog.
 - [x] Endurecer `detectSiteFromUrl` contra el prototipo (bug #6).
 - [x] Validar esquema de URL en el asistente (bug #7).
 - [x] Quitar el `<textarea>` del fallback de portapapeles en un `finally` (bug #8).
+- [x] Escapar comillas en `esc()` (bug #11).

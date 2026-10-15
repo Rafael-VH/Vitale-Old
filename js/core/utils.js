@@ -8,12 +8,18 @@ window.Vitale = window.Vitale || {};
 
 Vitale.utils = (function(){
 
-  /** Escapa caracteres HTML peligrosos. */
+  /**
+   * Escapa caracteres HTML peligrosos.
+   * El `&` va primero para no re-escapar entidades ya generadas.
+   * Cubre también comillas, así es seguro si algún día se usa en un atributo.
+   */
   function esc(s){
     return String(s)
       .replace(/&/g,'&amp;')
       .replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;');
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
   }
 
   /** Timer compartido para autocerrar alertas de éxito. */
