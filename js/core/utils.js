@@ -49,6 +49,24 @@ Vitale.utils = (function(){
   }
 
   /**
+   * Oculta una alerta y limpia su contenido.
+   * Simétrico de alertMsg: concentra aquí el className 'alert' para que
+   * ningún panel tenga que tocar className a mano.
+   */
+  function clearAlert(id){
+    const a = document.getElementById(id);
+    if(!a) return;
+
+    if(_alertTimer){
+      clearTimeout(_alertTimer);
+      _alertTimer = null;
+    }
+
+    a.className = 'alert';
+    a.innerHTML = '';
+  }
+
+  /**
    * Actualiza el contador de caracteres de un campo.
    * Soporta textarea/input (.value) y div (.textContent).
    */
@@ -122,5 +140,5 @@ Vitale.utils = (function(){
     if(btn) btn.disabled = !enabled;
   }
 
-  return { esc, alertMsg, updateCounter, copyToClipboard, downloadFile, setDownloadEnabled };
+  return { esc, alertMsg, clearAlert, updateCounter, copyToClipboard, downloadFile, setDownloadEnabled };
 })();

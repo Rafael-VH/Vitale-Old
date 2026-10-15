@@ -58,7 +58,11 @@ const loadModule = (rel) =>
 
 loadModule('js/core/utils.js');
 
-const { copyToClipboard } = globalThis.Vitale.utils;
+const { copyToClipboard, esc, alertMsg, clearAlert } = globalThis.Vitale.utils;
+
+function makeAlertEl(){
+  return { className: '', innerHTML: '' };
+}
 
 let pass = 0;
 let fail = 0;
@@ -129,6 +133,57 @@ async function main(){
 
     assert.strictEqual(ok, true);
     assert.strictEqual(createdTextareas, 0, 'no debería crear <textarea>');
+  });
+
+  /* --- #11: esc() debe cubrir también comillas ----------------------------- */
+
+  await check('#11: esc() escapa comillas dobles', () => {
+    assert.strictEqual(esc('a"b'), 'a&quot;b');
+  });
+
+  await check('#11: esc() escapa comillas simples', () => {
+    assert.strictEqual(esc("a'b"), 'a&#39;b');
+  });
+
+  await check('#11: esc() sigue escapando < > &', () => {
+    assert.strictEqual(esc('<b>&</b>'), '&lt;b&gt;&amp;&lt;/b&gt;');
+  });
+
+  await check('#11: esc() no re-escapa un & ya escapado', () => {
+    assert.strictEqual(esc('&lt;'), '&amp;lt;');
+  });
+
+  await check('#11: esc() no toca acentos ni guiones largos', () => {
+    assert.strictEqual(esc('Café añejo — capítulo 1'), 'Café añejo — capítulo 1');
+  });
+
+  /* --- #12: clearAlert concentra el className de la alerta ----------------- */
+
+  await check('#12: clearAlert oculta y limpia la alerta', () => {
+    const el = makeAlertEl();
+    document.getElementById = (id) => (id === 'convertAlert' ? el : null);
+
+    clearAlert('convertAlert');
+
+    assert.strictEqual(el.className, 'alert', 'debería quedar oculta');
+    assert.strictEqual(el.innerHTML, '', 'debería limpiar el contenido');
+  });
+
+  await check('#12: clearAlert con un id inexistente no lanza', () => {
+    document.getElementById = () => null;
+    clearAlert('noExiste');
+  });
+
+  await check('#12: alertMsg + clearAlert deja la alerta oculta', () => {
+    const el = makeAlertEl();
+    document.getElementById = (id) => (id === 'convertAlert' ? el : null);
+
+    alertMsg('convertAlert', '<b>hola</b>', 'ok');
+    assert.strictEqual(el.className, 'alert show alert-ok');
+
+    clearAlert('convertAlert');
+    assert.strictEqual(el.className, 'alert');
+    assert.strictEqual(el.innerHTML, '');
   });
 
   console.log('\n  ' + pass + ' ok, ' + fail + ' fallos\n');
