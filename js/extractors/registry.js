@@ -42,7 +42,9 @@ Vitale.extractors = (function(){
 
   /** Todos los dominios cubiertos, para el detector. */
   function allDomains(){
-    const map = {};
+    // Sin prototipo: así ningún host puede colisionar con una propiedad
+    // heredada de Object.prototype ("constructor", "__proto__"…).
+    const map = Object.create(null);
     for(const [name, cfg] of registry){
       if(cfg.domains){
         for(const d of cfg.domains) map[d] = name;
