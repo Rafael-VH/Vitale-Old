@@ -21,11 +21,32 @@ Vitale.assistPanel = (function(){
     el.insertBefore(div, el.firstChild);
   }
 
+  /**
+   * Normaliza y valida la URL escrita en el campo.
+   * Devuelve una URL absoluta http/https, o null si no es segura
+   * (bloquea javascript:, data:, vbscript:, file:…). Sin "://" se asume https://,
+   * así "sitio.com/capitulo" sigue funcionando.
+   */
+  function safeUrl(raw){
+    const text = (raw || '').trim();
+    if(!text) return null;
+
+    let u;
+    try{
+      u = new URL(text.includes('://') ? text : 'https://' + text);
+    }catch(e){
+      return null;
+    }
+
+    if(u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    return u.href;
+  }
+
   function setup(){
     // Copiar URL
     document.getElementById('btnCopyUrl').addEventListener('click', async () => {
-      const url = document.getElementById('assistUrl').value.trim();
-      if(!url) return alert('Introduce una URL.');
+      const url = safeUrl(document.getElementById('assistUrl').value);
+      if(!url) return alert('Introduce una URL http:// o https:// válida.');
 
       const ok = await Vitale.utils.copyToClipboard(url);
       if(ok){
@@ -56,8 +77,8 @@ Vitale.assistPanel = (function(){
 
     // Intentar abrir la URL
     document.getElementById('btnOpenPage').addEventListener('click', () => {
-      const url = document.getElementById('assistUrl').value.trim();
-      if(!url) return alert('Introduce una URL.');
+      const url = safeUrl(document.getElementById('assistUrl').value);
+      if(!url) return alert('Introduce una URL http:// o https:// válida.');
 
       const opened = window.open(url, '_blank', 'noopener');
 
