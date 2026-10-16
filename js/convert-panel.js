@@ -32,18 +32,7 @@ Vitale.convertPanel = (function(){
   /** Restaura el panel de carga a su estado inicial. */
   function resetCard(){
     uploadCard.classList.remove('loaded');
-
-    if(Vitale.platform.PLATFORM !== 'desktop'){
-      document.getElementById('uploadTitleText').innerHTML =
-        'Toca para <span class="hl">seleccionar un archivo</span>';
-      document.getElementById('uploadSubText').textContent =
-        'Se abrirá el selector de archivos del sistema';
-    } else {
-      document.getElementById('uploadTitleText').innerHTML =
-        'Suelta tu archivo aquí o <span class="hl">haz clic para elegirlo</span>';
-      document.getElementById('uploadSubText').textContent =
-        'Compatible con archivos guardados desde el navegador';
-    }
+    Vitale.platform.renderUploadCard();
 
     const fn = document.getElementById('fileNameDisplay');
     fn.textContent = '';

@@ -207,24 +207,83 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase D: Cleanup (last — independently rejectable)
 
-- [ ] D.1 **Single definition of the platform instructions.** Collapse `js/platform.js:32-58` and
+- [x] D.1 **Single definition of the platform instructions.** Collapse `js/platform.js:32-58` and
       `js/assist-panel.js:75-90` into one definition rendered by both; diff the two variants first so no
       platform-specific step is lost. (spec: `assist-guide` / Single definition of platform instructions)
       Test: `browser` — both surfaces render the shared definition; assert step text equality.
-- [ ] D.2 **Single source for the upload-card copy.** Collapse the duplicated literal
+      Done: the plan's cited lines were WRONG — `js/assist-panel.js:75-90` are event listeners, not a
+      second copy of the steps. The real duplicate was the `1️⃣2️⃣3️⃣` per-platform block inside the
+      copy-success message (`js/assist-panel.js:90-105`), which restated what `renderAssistSteps()`
+      already renders right below in `#assistSteps`. Resolved by **deletion**, not unification: the
+      message is now a short confirmation (`📋 URL copiada al portapapeles. Seguí los pasos de abajo.`)
+      and the five steps stay defined once in `js/platform.js:33-60`. Confirmed the deleted text was a
+      lossy subset of the steps (android "Menú ⋮ → Descargar página" ⊂ step 3; iOS "Compartir → Guardar
+      en Archivos" ⊂ step 3; desktop 3 lines ⊂ steps 2–4), so no information is lost.
+      `Vitale.platform.PLATFORM` is still used at `js/assist-panel.js:123` (android open-blocked warning)
+      — untouched. **Honest spec gap**: the requirement's "the upload card MUST render that same
+      definition" is satisfiable only via Req. 2 (upload-card copy) — the upload card renders a prompt,
+      not the step list — recorded instead of faked. Verified in-browser: `copyMsgText` = "📋 URL copiada
+      al portapapeles. Seguí los pasos de abajo."; `#assistSteps` still shows the 5 desktop steps.
+      Visible copy change — deliberate.
+- [x] D.2 **Single source for the upload-card copy.** Collapse the duplicated literal
       `js/platform.js:25` ↔ `js/convert-panel.js:33`. (spec: `assist-guide` / Upload-card copy from one
       source) Test: `suite`/grep — no literal duplicate remains; rendered copy unchanged.
-- [ ] D.3 **Collapse `prepareHTML` branches.** `js/site-detector.js:85-135` computes the same fields in two
+      Done: added `uploadCopy()` (single source returning `{title, sub}`) and `renderUploadCard()` to
+      `js/platform.js`; `renderBadge()` now always calls `renderUploadCard()`, and `resetCard()` in
+      `js/convert-panel.js` delegates to it. The duplicated mobile+desktop literal block in `resetCard()`
+      is gone. Safe because `index.html:63,65` already ships the desktop copy identical to the literal,
+      so the always-render path is a no-op on desktop. `markLoaded()` ("Archivo cargado") stays in
+      convert-panel — it is a third state, not the placeholder copy. `renderUploadCard` added to the
+      module's `return`. Verified in-browser: rendered `uploadTitleHTML`/`uploadSubText` byte-identical to
+      the pre-change golden; `platformExportKeys` now includes `renderUploadCard`.
+- [x] D.3 **Collapse `prepareHTML` branches.** `js/site-detector.js:85-135` computes the same fields in two
       near-identical MHTML/non-MHTML branches. Test: `suite` (existing coverage green; `node --check`).
-- [ ] D.4 **Deduplicate `wasFiltered`.** Computed twice with the same predicate:
+      Done: `prepareHTML` now resolves `sourceHtml`/`wasMHTML`/`parts` once, then runs a single common
+      path for `originUrl`/`siteKey`/`extractMainContent`/`wasFiltered`; only the `info` string stays
+      branch-dependent (MHTML always builds it, non-MHTML returns `null` when nothing was filtered).
+      Equivalence: `originalLen` ≡ `sourceHtml.length` in both old branches, so reported lengths are
+      unchanged. Verified in-browser against the pre-change golden: all cases — MHTML unfiltered
+      (royalroad), plain unfiltered, site-selector (fanfiction), generic, and MHTML filtered — produced
+      identical `htmlLen`/`wasFiltered`/`siteKey`/`method`/`info`.
+- [x] D.4 **Deduplicate `wasFiltered`.** Computed twice with the same predicate:
       `js/extractors/base.js:115-116` and `js/site-detector.js:96`. Test: `suite`.
-- [ ] D.5 **Prune unused exports.** Remove `decodeBase64` (`js/core/mhtml-parser.js:59,131`) and
+      Done: `extractMainContent` (`js/extractors/base.js`) now returns `filtered` on every exit
+      (site-selector, generic, and the empty-input guard), computing it once inside; `site-detector.js`
+      consumes `result.filtered` instead of recomputing `result.html.length < originalLen`. Confirmed
+      `extractMainContent` is only called from `js/site-detector.js` and no suite asserts its shape
+      (grep: 0 test references). Return shape grew by one key: `['html','method','filtered']`.
+- [x] D.5 **Prune unused exports.** Remove `decodeBase64` (`js/core/mhtml-parser.js:59,131`) and
       `MIN_CONTENT_LENGTH` (`js/extractors/base.js:12,119`) — no external consumer. (Keep them only if a
       consumer + test is added instead.) Test: `suite` — no test references them; suite green.
-- [ ] D.6 **CSS dedupe + stale index.** Collapse the repeated gradient-text recipe (`styles.css:93-100`,
+      Done: the plan was WRONG and would have introduced a bug — `decodeBase64` is used INTERNALLY at
+      `js/core/mhtml-parser.js:115` (`if(encoding === 'base64') body = decodeBase64(body, charset)`), so
+      deleting the function breaks base64 MHTML decoding. Removed only its **export** from the return
+      list; the function stays. `MIN_CONTENT_LENGTH` is kept exported: it has an internal consumer
+      (`base.js:37`) AND a test consumer (`tests/extractor-reachability.test.js`), satisfying the task's
+      own escape clause ("keep them if a consumer + test is added instead"). `decodeQuotedPrintable`
+      still exported (out of scope). Verified in-browser: `mhtmlExportKeys` =
+      `[looksLikeMHTML, decodeQuotedPrintable, extractHtmlFromMHTML]`. `docs/mhtml-y-charsets.md`
+      describes the *encoding algorithm*, which is unchanged, so no doc edit was needed.
+- [x] D.6 **CSS dedupe + stale index.** Collapse the repeated gradient-text recipe (`styles.css:93-100`,
       `:357-362`, `:390-395`); fix the section-5 label "Pestañas" at `styles.css:9` to match
       "PANEL PRINCIPAL" (`styles.css:161`). Test: `browser` — visual check at 390 px and 900 px; grep the
       section-5 label.
+      Done: added one grouped rule declaring the three shared declarations (`background-clip:text;
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent`) for `.brand-text h1,
+      .upload-title .hl, .upload-card.loaded .upload-title .hl`, and stripped those declarations from the
+      three original rules, leaving each just its own gradient. **Deliberate correction found during
+      verification**: the consumers must use `background-image` (longhand), NOT the `background`
+      shorthand — the shorthand resets `background-clip` to `border-box`, and because the grouped rule
+      sits earlier in the file the later shorthand won, regressing the gradient text to a solid box.
+      A/B-verified against pre-change `styles.css` (via `git stash`): original computed
+      `background-clip:text`; shorthand version computed `border-box`; `background-image` restored
+      `text`. Final computed values identical to the original golden for all three (same
+      `backgroundImage`, `clip:text`, `webkitTextFillColor: transparent`). **Adjacent 1-line fix**: the
+      section index was stale on TWO lines, not one — `styles.css:9` ("5. Pestañas" → real
+      "5. PANEL PRINCIPAL") and `:10` ("6. Inputs y textarea" → real "6. LAYOUT Y CAMPOS DE TEXTO"); both
+      corrected. No HTML touched (avoids adding the class in JS strings that emit `<span class="hl">`).
+      Note: the visual screenshot at 390 px / 900 px could not be reviewed (the model cannot read
+      images); equivalence rests on computed-style equality, stronger for this recipe.
 
 ## Phase E: Verification and docs
 

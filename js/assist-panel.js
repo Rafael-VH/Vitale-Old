@@ -87,24 +87,9 @@ Vitale.assistPanel = (function(){
 
       const ok = await Vitale.utils.copyToClipboard(url);
       if(ok){
-        let msg = '📋 <b>URL copiada al portapapeles.</b><br><br>';
-        const P = Vitale.platform.PLATFORM;
-
-        if(P === 'android'){
-          msg += '1️⃣ Abre Chrome → pega la URL → Enter.<br>' +
-                 '2️⃣ Menú ⋮ → <b>"Descargar página"</b>.<br>' +
-                 '3️⃣ Vuelve aquí y usa el panel de carga.';
-        } else if(P === 'ios'){
-          msg += '1️⃣ Abre Safari → pega la URL → Enter.<br>' +
-                 '2️⃣ Compartir → <b>"Guardar en Archivos"</b>.<br>' +
-                 '3️⃣ Vuelve aquí y usa el panel de carga.';
-        } else {
-          msg += '1️⃣ Pega la URL en el navegador.<br>' +
-                 '2️⃣ <b>Ctrl+U</b> → <b>Ctrl+A</b> → <b>Ctrl+C</b>.<br>' +
-                 '3️⃣ Vuelve aquí y pulsa <b>"Pegar"</b>.';
-        }
-
-        showMessage('ok', msg);
+        // Solo confirmación: los pasos por plataforma están definidos en un único
+        // lugar (Vitale.platform.renderAssistSteps) y se ven justo debajo.
+        showMessage('ok', '📋 <b>URL copiada al portapapeles.</b> Seguí los pasos de abajo.');
         document.getElementById('assistSteps').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }else{
         showMessage('warn', '⚠️ No se pudo copiar. Selecciona el texto del campo manualmente.');

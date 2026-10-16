@@ -126,5 +126,7 @@ Vitale.mhtml = (function(){
     return { html: bestHtml.trim(), parts: parts.length, htmlPartsFound };
   }
 
-  return { looksLikeMHTML, decodeQuotedPrintable, decodeBase64, extractHtmlFromMHTML };
+  // decodeBase64 se queda interno: lo usa extractHtmlFromMHTML para las partes
+  // base64, pero ningún otro módulo lo consume directamente.
+  return { looksLikeMHTML, decodeQuotedPrintable, extractHtmlFromMHTML };
 })();

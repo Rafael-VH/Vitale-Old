@@ -80,18 +80,28 @@ Vitale.siteDetector = (function(){
   function prepareHTML(rawInput){
     if(!rawInput || !rawInput.trim()) throw new Error('La entrada está vacía.');
 
+    // Resolver la fuente y si venía en MHTML; luego un único camino común.
+    let sourceHtml = rawInput;
+    let wasMHTML = false;
+    let parts = 0;
+
     if(Vitale.mhtml.looksLikeMHTML(rawInput)){
       const extracted = Vitale.mhtml.extractHtmlFromMHTML(rawInput);
       if(!extracted || !extracted.html){
         throw new Error('Se detectó MHTML pero no se encontró ninguna parte text/html dentro.');
       }
+      sourceHtml = extracted.html;
+      wasMHTML = true;
+      parts = extracted.parts;
+    }
 
-      const originUrl = extractOriginUrl(rawInput);
-      const siteKey = detectSiteFromUrl(originUrl);
-      const originalLen = extracted.html.length;
-      const result = Vitale.extractorBase.extractMainContent(extracted.html, siteKey);
-      const wasFiltered = result.html.length < originalLen;
+    const originUrl = extractOriginUrl(rawInput);
+    const siteKey = detectSiteFromUrl(originUrl);
+    const originalLen = sourceHtml.length;
+    const result = Vitale.extractorBase.extractMainContent(sourceHtml, siteKey);
+    const wasFiltered = result.filtered;
 
+    if(wasMHTML){
       const siteLabel = siteKey !== 'unknown' ? ` [${siteKey}]` : '';
       const methodLabel = {
         'site-selector': ' · extractor específico',
@@ -107,16 +117,11 @@ Vitale.siteDetector = (function(){
         siteKey,
         originUrl,
         method: result.method,
-        info: `MHTML parseado (${extracted.parts} partes)${siteLabel}${methodLabel}. ` +
+        info: `MHTML parseado (${parts} partes)${siteLabel}${methodLabel}. ` +
               `HTML útil: ${originalLen.toLocaleString()} → ${result.html.length.toLocaleString()} caracteres` +
               (wasFiltered ? ' (solo contenido del capítulo)' : '') + '.'
       };
     }
-
-    const originUrl = extractOriginUrl(rawInput);
-    const siteKey = detectSiteFromUrl(originUrl);
-    const result = Vitale.extractorBase.extractMainContent(rawInput, siteKey);
-    const wasFiltered = result.html.length < rawInput.length;
 
     return {
       html: result.html,
@@ -126,7 +131,7 @@ Vitale.siteDetector = (function(){
       originUrl,
       method: result.method,
       info: wasFiltered
-        ? `HTML filtrado (${siteKey}). ${rawInput.length.toLocaleString()} → ${result.html.length.toLocaleString()} caracteres.`
+        ? `HTML filtrado (${siteKey}). ${originalLen.toLocaleString()} → ${result.html.length.toLocaleString()} caracteres.`
         : null
     };
   }

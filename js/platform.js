@@ -15,18 +15,36 @@ Vitale.platform = (function(){
 
   const PLATFORM = detect();
 
+  /**
+   * Copia del upload-card, definida UNA sola vez. La usan el arranque
+   * (renderBadge) y el reseteo del panel de conversión: así no pueden divergir.
+   */
+  function uploadCopy(){
+    if(PLATFORM === 'desktop'){
+      return {
+        title: 'Suelta tu archivo aquí o <span class="hl">haz clic para elegirlo</span>',
+        sub: 'Compatible con archivos guardados desde el navegador'
+      };
+    }
+    return {
+      title: 'Toca para <span class="hl">seleccionar un archivo</span>',
+      sub: 'Se abrirá el selector de archivos del sistema'
+    };
+  }
+
+  /** Escribe la copia del upload-card que corresponde a esta plataforma. */
+  function renderUploadCard(){
+    const c = uploadCopy();
+    document.getElementById('uploadTitleText').innerHTML = c.title;
+    document.getElementById('uploadSubText').textContent = c.sub;
+  }
+
   /** Actualiza el pill de plataforma y los textos del upload-card. */
   function renderBadge(){
     const b = document.getElementById('platformBadge');
     const icons = { android:'🤖 Android', ios:'🍎 iOS', desktop:'💻 Escritorio' };
     b.textContent = icons[PLATFORM];
-
-    if(PLATFORM !== 'desktop'){
-      document.getElementById('uploadTitleText').innerHTML =
-        'Toca para <span class="hl">seleccionar un archivo</span>';
-      document.getElementById('uploadSubText').textContent =
-        'Se abrirá el selector de archivos del sistema';
-    }
+    renderUploadCard();
   }
 
   /** Rellena los pasos del asistente según plataforma. */
@@ -59,5 +77,5 @@ Vitale.platform = (function(){
     }
   }
 
-  return { PLATFORM, renderBadge, renderAssistSteps };
+  return { PLATFORM, renderBadge, renderUploadCard, renderAssistSteps };
 })();
