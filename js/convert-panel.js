@@ -11,6 +11,10 @@ Vitale.convertPanel = (function(){
 
   let processing = false;
 
+  // Timer del debounce del badge de formato (ver scheduleBadgeUpdate)
+  let badgeTimer = null;
+  const BADGE_DELAY_MS = 150;
+
   // Elementos que se asignan en setup()
   let htmlInput, fileInput, uploadCard, btnConvert;
 
@@ -149,6 +153,20 @@ Vitale.convertPanel = (function(){
     }
   }
 
+  /**
+   * Difiere la actualización del badge de formato.
+   * `updateFormatBadge` corre cuatro regex sobre el texto completo (hasta 3 MB):
+   * repetirlo en cada tecla bloquea el hilo ~8 ms por pulsación. El contador de
+   * caracteres NO se difiere: es O(1) y debe sentirse instantáneo.
+   */
+  function scheduleBadgeUpdate(){
+    clearTimeout(badgeTimer);
+    badgeTimer = setTimeout(() => {
+      badgeTimer = null;
+      Vitale.siteDetector.updateFormatBadge();
+    }, BADGE_DELAY_MS);
+  }
+
   /** Conecta todos los eventos del panel. */
   function setup(){
     htmlInput  = document.getElementById('htmlInput');
@@ -156,10 +174,10 @@ Vitale.convertPanel = (function(){
     uploadCard = document.getElementById('uploadCard');
     btnConvert = document.getElementById('btnConvert');
 
-    // Contador y badge en vivo
+    // Contador (inmediato) y badge de formato (diferido al dejar de teclear)
     htmlInput.addEventListener('input', () => {
       Vitale.utils.updateCounter('htmlInput', 'inputCounter');
-      Vitale.siteDetector.updateFormatBadge();
+      scheduleBadgeUpdate();
     });
     Vitale.utils.updateCounter('htmlInput', 'inputCounter');
     Vitale.siteDetector.updateFormatBadge();

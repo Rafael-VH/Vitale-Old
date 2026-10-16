@@ -165,7 +165,7 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase C: Performance
 
-- [ ] C.1 **Debounce the format badge.** Add a small local debounce (~150 ms) at the badge wiring in
+- [x] C.1 **Debounce the format badge.** Add a small local debounce (~150 ms) at the badge wiring in
       `js/convert-panel.js:154-157` so `updateFormatBadge` → `extractOriginUrl`
       (`js/site-detector.js:159`, `:148`) stops running four whole-document regexes per keystroke over up
       to 3 MB (`js/convert-panel.js:106`). Keep it a local helper — do NOT widen `Vitale.utils` for this.
@@ -173,8 +173,37 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       Test: `browser` — wrap `Vitale.siteDetector.updateFormatBadge` with a counter, dispatch N rapid
       `input` events on the textarea, assert the counter is 1 (not N); then assert the badge still updates
       after the delay.
-- [ ] C.2 Confirm no regression on a large paste: `browser` — paste ~3 MB, type, assert the badge still
+      Done: implemented as a **local** debounce in `js/convert-panel.js` (`scheduleBadgeUpdate()` +
+      `badgeTimer` + `BADGE_DELAY_MS = 150`); `Vitale.utils` untouched, as required. **Line drift vs the
+      plan**: the badge wiring is at `js/convert-panel.js:160-163`, not `:154-157`; `extractOriginUrl` is
+      DEFINED at `js/site-detector.js:16-39` (the plan's `:148` is actually a line inside
+      `updateFormatBadge`) and does exactly **4 whole-document regex passes** — Snapshot-Content-Location
+      (`:19`), `Content-Location` with the `gi` flag (`:22`), canonical (`:28`), og:url (`:33`) — plus a
+      separate `Vitale.mhtml.looksLikeMHTML(raw)` scan at `:146`. The "four regexes" claim was verified in
+      the source, not assumed.
+      **RED observed in-browser BEFORE the fix** (input 4.62 MB): 10 `input` events → **10 synchronous
+      calls**, `callsAfterWait=10` (no deferral at all), blocked main thread **163.5 ms** for 10 keystrokes
+      (~16 ms each — the "long task" threshold), unit badge cost measured at **8.6 ms**.
+      **GREEN**: same 4.62 MB, 10 events → `callsRightAfterBurst=0`, `callsAfterWait=1`, burst **2.2 ms**
+      (74× less). `#inputCounter` stays immediate (`4.620.178 caracteres`, as designed — it is O(1));
+      `#formatBadge` resolves `📄 HTML` and `#siteBadge` resolves `🌐 Royal Road`.
+      **Honest gap**: no headless coverage — `js/convert-panel.js` is not loaded by any suite (its
+      `setup()` needs a real DOM), so this is verified in-browser only, which is the plan's chosen
+      verification. A future regression in the debounce will NOT be caught by CI.
+- [x] C.2 Confirm no regression on a large paste: `browser` — paste ~3 MB, type, assert the badge still
       resolves and no long task blocks the input. Report observed timing.
+      Done: 1.16 MB input, 8 keystrokes 30 ms apart (deliberately below the 150 ms delay) →
+      `callsDuringTyping=0`, `callsAfterStop=1`; `#formatBadge` and `#siteBadge` still resolve
+      (`📄 HTML` / `🌐 Royal Road`). Max synchronous `input` handling observed: **21.7 ms**, once, on the
+      probe's own `ta.value = <1.16 MB>` re-assignment — NOT on `updateFormatBadge`, which ran zero times
+      during typing. A real keystroke never goes through that JS `value` setter, so that spike is a
+      measurement artifact; the part this change controls (the 4 regex passes) contributes **0 ms** while
+      typing and a single **~8.6 ms** call after the delay stops.
+      Note: no `PerformanceObserver`/`longtask` numbers are reported — that probe timed out the browser
+      bridge, so timings above are direct synchronous measurements instead of observer entries.
+      **Not measured** (out of scope, would require a profiler): whether `looksLikeMHTML` and the `gi`
+      array allocation at `js/site-detector.js:22` are themselves worth optimizing inside the single
+      deferred call. One 8.6 ms call per pause is acceptable; optimizing further is unrequested.
 
 ## Phase D: Cleanup (last — independently rejectable)
 
