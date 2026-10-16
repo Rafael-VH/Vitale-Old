@@ -1,13 +1,13 @@
 /* ============================================================================
-   VITALE — Check del esquema de URL en el panel "Obtener de URL".
+   VITALE — Check del esquema de URL en la guía "Obtener el HTML".
    ----------------------------------------------------------------------------
    Sin framework:  node tests/url-scheme-safety.test.js
    Sale con código 1 si alguna aserción falla.
 
-   Cubre el bug #7: el panel hacía `window.open(url)` con el texto crudo del
+   Cubre el bug #7: la guía hacía `window.open(url)` con el texto crudo del
    campo, así que un `javascript:` o un `data:text/html,<script>…` pegado en el
    campo se abría como si fuera una página. Las pruebas disparan los handlers
-   REALES del panel (con DOM simulado), no una copia de la lógica.
+   REALES de la guía (con DOM simulado), no una copia de la lógica.
    ========================================================================== */
 
 const fs = require('node:fs');
@@ -35,7 +35,8 @@ function makeEl(id){
     firstChild: null,
     addEventListener(ev, fn){ e.handlers[ev] = fn; },
     querySelectorAll(){ return []; },
-    insertBefore(){}
+    insertBefore(){},
+    scrollIntoView(){}
   };
   elements[id] = e;
   return e;
@@ -46,8 +47,11 @@ global.document = {
   createElement: () => ({ className: '', style: {}, innerHTML: '' })
 };
 
+makeEl('assistModal');
 makeEl('assistSteps');
 makeEl('assistUrl');
+makeEl('btnAssist');
+makeEl('btnCloseAssist');
 makeEl('btnCopyUrl');
 makeEl('btnOpenPage');
 makeEl('btnGoConvert');

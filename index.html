@@ -40,17 +40,9 @@
   </div>
 
   <!-- ============================================================
-       PESTAÑAS
+       PANEL PRINCIPAL: CONVERTIR HTML
        ============================================================ -->
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="tab-convert">📄 Convertir HTML</button>
-    <button class="tab-btn" data-tab="tab-assist">📋 Obtener de URL</button>
-  </div>
-
-  <!-- ============================================================
-       PESTAÑA 1: CONVERTIR HTML
-       ============================================================ -->
-  <div class="tab-panel active" id="tab-convert">
+  <div class="panel" id="convertPanel">
 
     <!--
       El nombre del archivo (#fileNameDisplay) vive FUERA del <label>
@@ -86,6 +78,7 @@
         class="visually-hidden-input">
     </label>
     <div class="file-name" id="fileNameDisplay"></div>
+    <button class="btn btn-ghost btn-sm assist-open" id="btnAssist">❔ ¿Cómo obtengo el archivo?</button>
 
     <!-- ============================================================
          ÁREA DE ENTRADA Y SALIDA
@@ -130,30 +123,6 @@
     <div class="info" id="convertInfo"></div>
     <div id="convertAlert" class="alert"></div>
   </div>
-
-  <!-- ============================================================
-       PESTAÑA 2: OBTENER DE URL
-       ============================================================ -->
-  <div class="tab-panel" id="tab-assist">
-    <p class="assist-intro">
-      Los navegadores no pueden descargar páginas externas directamente (CORS). Además, en móvil Android los enlaces a ciertas webs se abren en su app instalada en lugar del navegador.
-    </p>
-
-    <label>URL de la página</label>
-    <input type="url" id="assistUrl" placeholder="https://ejemplo.com/articulo" value="">
-
-    <div class="btn-row assist-actions">
-      <button class="btn btn-primary" id="btnCopyUrl">📋 1. Copiar URL</button>
-      <button class="btn" id="btnOpenPage">🌐 Intentar abrir</button>
-      <button class="btn" id="btnGoConvert">➡️ 2. Ir a pegar HTML</button>
-    </div>
-
-    <div class="alert alert-info show">
-      💡 <b>En Android</b> usa "Copiar URL" y pégala manualmente en Chrome/Firefox para evitar que el sistema la redirija a la app.
-    </div>
-
-    <div class="steps" id="assistSteps"></div>
-  </div>
 </div>
 
 <!-- ============================================================
@@ -175,6 +144,37 @@
     <div class="modal-actions">
       <button class="btn" id="btnCancelDownload">Cancelar</button>
       <button class="btn btn-success" id="btnConfirmDownload">💾 Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: cómo obtener el HTML de una página
+     ============================================================ -->
+<div class="modal-backdrop" id="assistModal">
+  <div class="modal">
+    <h3>📋 Cómo obtener el HTML</h3>
+    <p>
+      Los navegadores no pueden descargar páginas externas directamente (CORS). Además, en móvil Android los enlaces a ciertas webs se abren en su app instalada en lugar del navegador. Guarda la página a mano y súbela aquí.
+    </p>
+
+    <label for="assistUrl">URL de la página</label>
+    <input type="url" id="assistUrl" placeholder="https://ejemplo.com/articulo" value="">
+
+    <div class="btn-row assist-actions">
+      <button class="btn btn-primary" id="btnCopyUrl">📋 1. Copiar URL</button>
+      <button class="btn" id="btnOpenPage">🌐 Intentar abrir</button>
+      <button class="btn" id="btnGoConvert">➡️ 2. Ir a pegar HTML</button>
+    </div>
+
+    <div class="alert alert-info show">
+      💡 <b>En Android</b> usa "Copiar URL" y pégala manualmente en Chrome/Firefox para evitar que el sistema la redirija a la app.
+    </div>
+
+    <div class="steps" id="assistSteps"></div>
+
+    <div class="modal-actions">
+      <button class="btn" id="btnCloseAssist">Cerrar</button>
     </div>
   </div>
 </div>

@@ -1,10 +1,18 @@
 /* ============================================================================
-   VITALE — Panel "Obtener de URL"
+   VITALE — Guía "Obtener el HTML" (modal)
    ========================================================================== */
 
 window.Vitale = window.Vitale || {};
 
 Vitale.assistPanel = (function(){
+
+  let modal;
+
+  /** Abre la guía. */
+  function open(){ modal.classList.add('show'); }
+
+  /** Cierra la guía. */
+  function close(){ modal.classList.remove('show'); }
 
   /**
    * Inserta un aviso dinámico en la lista de pasos.
@@ -43,6 +51,14 @@ Vitale.assistPanel = (function(){
   }
 
   function setup(){
+    modal = document.getElementById('assistModal');
+
+    // Abrir / cerrar la guía
+    document.getElementById('btnAssist').addEventListener('click', open);
+    document.getElementById('btnCloseAssist').addEventListener('click', close);
+    modal.addEventListener('click', e => { if(e.target === modal) close(); });
+    modal.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+
     // Copiar URL
     document.getElementById('btnCopyUrl').addEventListener('click', async () => {
       const url = safeUrl(document.getElementById('assistUrl').value);
@@ -68,8 +84,7 @@ Vitale.assistPanel = (function(){
         }
 
         showMessage('ok', msg);
-        const el = document.getElementById('assistSteps');
-        window.scrollTo({ top: el.offsetTop - 100, behavior: 'smooth' });
+        document.getElementById('assistSteps').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }else{
         alert('⚠️ No se pudo copiar. Selecciona el texto del campo manualmente.');
       }
@@ -93,14 +108,12 @@ Vitale.assistPanel = (function(){
       }
     });
 
-    // Ir a la pestaña Convertir
+    // Ir al panel de carga
     document.getElementById('btnGoConvert').addEventListener('click', () => {
-      document.querySelector('.tab-btn[data-tab="tab-convert"]').click();
-      setTimeout(() => {
-        document.getElementById('uploadCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 150);
+      close();
+      document.getElementById('uploadCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
 
-  return { setup };
+  return { setup, open, close };
 })();

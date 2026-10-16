@@ -34,16 +34,16 @@ repositorio y abrir `index.html` es todo lo que hace falta.
 
 ```text
 Vitale-Old/
-├── index.html              # Shell único: barra de estado, 2 pestañas, modal
+├── index.html              # Shell único: barra de estado, panel y 2 modales
 ├── styles.css              # Tema oscuro completo (variables CSS + media queries)
 ├── js/
-│   ├── main.js             # Bootstrap: inicializa paneles y conecta los tabs
+│   ├── main.js             # Bootstrap: carga el motor e inicializa los paneles
 │   ├── platform.js         # Detección Android / iOS / escritorio
 │   ├── site-detector.js    # URL de origen → sitio → cascada de extracción
 │   ├── mdream-loader.js    # Carga el motor y expone convert()
 │   ├── download-modal.js   # Modal de nombre de archivo y descarga
-│   ├── convert-panel.js    # Pestaña "Convertir HTML"
-│   ├── assist-panel.js     # Pestaña "Obtener de URL"
+│   ├── convert-panel.js    # Panel de conversión
+│   ├── assist-panel.js     # Guía "Obtener el HTML" (modal)
 │   ├── core/
 │   │   ├── utils.js        # esc, alertas, contadores, portapapeles, descarga
 │   │   ├── mhtml-parser.js # Detecta y extrae la parte text/html del MHTML
@@ -76,8 +76,8 @@ Todos los módulos son IIFEs que asignan una sola clave a `window.Vitale`.
 | `Vitale.siteDetector` | `site-detector.js` | `prepareHTML`, `extractOriginUrl`, `detectSiteFromUrl`, badges |
 | `Vitale.mdream` | `mdream-loader.js` | `load`, `isLoaded`, `convert(html)` |
 | `Vitale.downloadModal` | `download-modal.js` | `setup`, `open`, `close`, `confirm` |
-| `Vitale.convertPanel` | `convert-panel.js` | Pestaña 1 completa |
-| `Vitale.assistPanel` | `assist-panel.js` | Pestaña 2 (guía por plataforma) |
+| `Vitale.convertPanel` | `convert-panel.js` | Panel de conversión completo |
+| `Vitale.assistPanel` | `assist-panel.js` | Guía en modal para obtener el HTML (por plataforma) |
 
 Detalle del subsistema de extracción en [Extractores](extractores.md); el del
 formato MHTML en [MHTML y codificaciones](mhtml-y-charsets.md).
@@ -146,7 +146,7 @@ No hay capa de estado. Los "datos" de la aplicación son:
 | --- | --- |
 | HTML/MHTML de entrada | `value` de `#htmlInput` |
 | Markdown resultante | `textContent` de `#mdOutput` |
-| Pestaña activa | clase `.active` en `.tab-btn` / `.tab-panel` |
+| Guía de obtención abierta | clase `.show` en `#assistModal` |
 | Motor cargado | variable `loaded` dentro de `Vitale.mdream` |
 | Conversión en curso | variable `processing` dentro de `Vitale.convertPanel` |
 | Alertas | clases del elemento `#convertAlert` |
@@ -177,7 +177,7 @@ El layout es de una columna fluida con un ancho máximo, y pasa a dos columnas
 | --- | --- |
 | `> 820px` | Layout a dos columnas, botones en fila |
 | `≤ 820px` | `.grid-2` a una columna; todos los botones llegan a 44px de alto; `background-attachment` a `scroll` (evita el jank de scroll en iOS) |
-| `≤ 640px` | Encabezados de campo apilados; botones de acción principal y del asistente a ancho completo; pestañas más compactas |
+| `≤ 640px` | Encabezados de campo apilados; botones de acción principal y del asistente a ancho completo |
 | `≤ 480px` | Modal con padding reducido y acciones apiladas; barra de estado más densa |
 | `prefers-reduced-motion` | Desactiva animaciones |
 
@@ -197,7 +197,7 @@ para que un botón deshabilitado no cambie de tamaño, y `.btn` fija
 | Extracción | Cascada por sitio → genérico, para sobrevivir a cambios de estructura del DOM |
 | Salida | Blob con BOM UTF-8 prependido, para que Android y el Bloc de notas muestren bien los acentos |
 | Portapapeles | `navigator.clipboard` con fallback a `document.execCommand('copy')` |
-| Alertas | `utils.alertMsg` (autocierre a 8 s en los mensajes de éxito) y avisos dinámicos en el panel asistente |
+| Alertas | `utils.alertMsg` (autocierre a 8 s en los mensajes de éxito) y avisos dinámicos en la guía de obtención |
 | Motor | Versión fijada (`@mdream/js@2.0.3`) con CDN de respaldo, para no depender de una release móvil |
 | Idioma | El código, los comentarios y la documentación están en español |
 

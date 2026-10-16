@@ -159,30 +159,13 @@ body{
 
 
 /* ============================================================
-   5. PESTAÑAS
+   5. PANEL PRINCIPAL
    ============================================================ */
-.tabs{
-  display:flex;gap:4px;border-bottom:1px solid var(--border-soft);margin-bottom:0;
-  overflow-x:auto;scrollbar-width:thin;
-}
-
-.tab-btn{
-  padding:12px 20px;background:transparent;border:none;
-  color:var(--text-mute);cursor:pointer;font-size:.9rem;font-weight:600;
-  border-bottom:2px solid transparent;margin-bottom:-1px;
-  transition:all .18s;letter-spacing:.2px;
-  font-family:inherit;white-space:nowrap;
-}
-.tab-btn:hover{color:var(--text-dim)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-
-.tab-panel{
-  display:none;
+.panel{
   background:linear-gradient(180deg,var(--surface),var(--bg-soft));
-  border:1px solid var(--border-soft);border-top:none;
-  border-radius:0 0 var(--radius) var(--radius);padding:26px;
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius);padding:26px;
 }
-.tab-panel.active{display:block}
 
 
 /* ============================================================
@@ -273,6 +256,9 @@ textarea{min-height:240px;line-height:1.6}
 .btn-row.main-actions{margin-top:22px}
 .btn-row.main-actions .btn{padding:13px 26px;font-size:.95rem}
 .btn-row.assist-actions{margin-top:16px}
+/* La guía vive en un modal de 500px, así que sus acciones se apilan siempre.
+   Depender del viewport ya no tenía sentido: la fila no es la página. */
+.btn-row.assist-actions .btn{flex:1 1 100%;justify-content:center}
 
 
 /* ============================================================
@@ -446,9 +432,9 @@ textarea{min-height:240px;line-height:1.6}
 
 
 /* ============================================================
-   12. PASOS DEL ASISTENTE
+   12. GUÍA DEL ASISTENTE
    ============================================================ */
-.assist-intro{margin-bottom:18px;color:var(--text-dim);font-size:.9rem}
+.assist-open{margin-top:14px}
 
 .steps{background:var(--bg);border-radius:var(--radius);padding:20px;border:1px solid var(--border-soft);margin-top:20px}
 
@@ -495,6 +481,7 @@ code{
   background:linear-gradient(180deg,var(--surface),var(--bg-soft));
   border:1px solid var(--border);
   border-radius:18px;padding:28px;max-width:500px;width:100%;
+  max-height:90vh;overflow-y:auto;
   box-shadow:var(--shadow-lg);
   animation:slideUp .24s cubic-bezier(.4,0,.2,1);
 }
@@ -506,11 +493,11 @@ code{
 .modal h3{font-size:1.15rem;margin-bottom:8px;font-weight:800;letter-spacing:-.3px}
 .modal p{font-size:.88rem;color:var(--text-dim);margin-bottom:22px;line-height:1.6}
 .modal label{text-transform:none;letter-spacing:.2px;font-size:.82rem;color:var(--text-dim);margin-bottom:8px}
-.modal input[type="text"]{
+.modal input[type="text"],.modal input[type="url"]{
   font-size:.95rem;padding:13px 15px;
   background:var(--bg);border:2px solid var(--border);
 }
-.modal input[type="text"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.modal input[type="text"]:focus,.modal input[type="url"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
 
 .modal-suffix{position:relative;display:flex;align-items:center}
 .modal-suffix input{padding-right:60px}
@@ -555,14 +542,12 @@ code{
 
 @media(max-width:640px){
   body{padding:18px 14px 40px}
-  .tab-panel{padding:20px}
+  .panel{padding:20px}
   .upload-card{padding:26px 18px}
   .upload-icon{width:56px;height:56px}
-  .tab-btn{padding:12px 10px;font-size:.84rem}
 
-  /* Acciones principales y del asistente: ancho completo, texto centrado */
-  .btn-row.main-actions .btn,
-  .btn-row.assist-actions .btn{flex:1 1 100%;justify-content:center}
+  /* Acciones principales: ancho completo, texto centrado */
+  .btn-row.main-actions .btn{flex:1 1 100%;justify-content:center}
 
   /* La etiqueta ocupa su propia fila y las acciones bajan a la siguiente,
      en vez de comprimirse y partir el texto de los botones. */

@@ -8,7 +8,7 @@ que guardar la página antes** en lugar de simplemente pegar su URL.
 - [Flujo en escritorio](#flujo-en-escritorio)
 - [Flujo en Android](#flujo-en-android)
 - [Flujo en iOS](#flujo-en-ios)
-- [Los dos paneles](#los-dos-paneles)
+- [El panel y la guía](#el-panel-y-la-guía)
 - [Guardar el resultado](#guardar-el-resultado)
 - [Límites](#límites)
 
@@ -31,7 +31,8 @@ La solución es darle el contenido ya en mano:
 
 En móvil hay un segundo motivo: **Android** asocia ciertos dominios a sus apps
 instaladas, así que tocar un enlace puede abrir la app en lugar del navegador.
-Por eso el panel *Obtener de URL* empuja a **copiar** la URL y pegarla a mano.
+Por eso la guía *¿Cómo obtengo el archivo?* empuja a **copiar** la URL y pegarla
+a mano.
 
 El contenido **nunca sale del dispositivo**. Lo único que toca la red es la
 descarga inicial del motor de conversión desde un CDN (ver
@@ -64,8 +65,9 @@ descarga inicial del motor de conversión desde un CDN (ver
 
 ## Flujo en Android
 
-1. En el panel *Obtener de URL*, pulsa **Copiar URL**. Esto copia el enlace
-   **sin abrirlo**, evitando que Android lo redirija a la app instalada.
+1. Abre la guía con el botón **❔ ¿Cómo obtengo el archivo?** y pulsa
+   **Copiar URL**. Esto copia el enlace **sin abrirlo**, evitando que Android lo
+   redirija a la app instalada.
 2. Abre **Chrome** o **Firefox**, pega la URL y pulsa Enter.
 3. Menú <kbd>⋮</kbd> → **Descargar página**. Se guardará como `.mhtml`.
 4. Vuelve a Vitale, pulsa **Ir a pegar HTML** y usa el recuadro de carga para
@@ -73,7 +75,7 @@ descarga inicial del motor de conversión desde un CDN (ver
 5. Pulsa **Convertir a Markdown** → **Descargar .md**.
 
 Si al pulsar *Intentar abrir* se abrió una app en lugar del navegador, ciérrala
-y usa *Copiar URL*: es el comportamiento documentado en el propio panel.
+y usa *Copiar URL*: es el comportamiento documentado en la propia guía.
 
 ---
 
@@ -87,9 +89,9 @@ y usa *Copiar URL*: es el comportamiento documentado en el propio panel.
 
 ---
 
-## Los dos paneles
+## El panel y la guía
 
-### Pestaña "Convertir HTML"
+### Panel de conversión
 
 El panel principal. Acepta tres vías de entrada:
 
@@ -106,11 +108,14 @@ Al cargar un archivo, la app:
 - Si es MHTML y reconoce el dominio, muestra el badge de sitio y avisa que se
   usará su extractor específico.
 
-### Pestaña "Obtener de URL"
+### Guía "Obtener el HTML" (modal)
 
-Una guía interactiva para el flujo manual. No descarga nada por sí sola: copia la
-URL, ofrece intentar abrirla, y muestra los pasos adaptados a tu plataforma
-(Android, iOS o escritorio).
+Se abre desde el botón **❔ ¿Cómo obtengo el archivo?**, bajo el recuadro de
+carga. Es una guía interactiva para el flujo manual: no descarga nada por sí
+sola, copia la URL, ofrece intentar abrirla, y muestra los pasos adaptados a tu
+plataforma (Android, iOS o escritorio). Se cierra con **Cerrar**, <kbd>Esc</kbd>
+o tocando fuera de la tarjeta. **Ir a pegar HTML** cierra la guía y baja hasta el
+recuadro de carga.
 
 ---
 

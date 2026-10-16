@@ -1,26 +1,13 @@
 /* ============================================================================
    VITALE — Bootstrap
    ----------------------------------------------------------------------------
-   Punto de entrada. Carga el motor, inicializa los paneles y conecta los tabs.
+   Punto de entrada. Carga el motor e inicializa los paneles.
    Este archivo debe cargarse ÚLTIMO en index.html.
    ========================================================================== */
 
 window.Vitale = window.Vitale || {};
 
 (function(){
-
-  /** Alterna entre pestañas. */
-  function setupTabs(){
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-  }
 
   /** Arranca la aplicación. */
   function init(){
@@ -32,7 +19,6 @@ window.Vitale = window.Vitale || {};
     Vitale.downloadModal.setup();
     Vitale.convertPanel.setup();
     Vitale.assistPanel.setup();
-    setupTabs();
 
     // Estado inicial
     Vitale.utils.setDownloadEnabled(false);
