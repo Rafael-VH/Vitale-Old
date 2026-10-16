@@ -174,6 +174,11 @@ async function main(){
     clearAlert('noExiste');
   });
 
+  await check('#12: alertMsg con un id inexistente no lanza', () => {
+    document.getElementById = () => null;
+    alertMsg('noExiste', 'x', 'warn');
+  });
+
   await check('#12: alertMsg + clearAlert deja la alerta oculta', () => {
     const el = makeAlertEl();
     document.getElementById = (id) => (id === 'convertAlert' ? el : null);

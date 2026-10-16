@@ -120,10 +120,8 @@ Vitale.mhtml = (function(){
 
     if(!htmlPartsFound) return null;
 
-    if(boundary){
-      const endIdx = bestHtml.indexOf('--' + boundary);
-      if(endIdx !== -1) bestHtml = bestHtml.slice(0, endIdx);
-    }
+    const endIdx = bestHtml.indexOf('--' + boundary);
+    if(endIdx !== -1) bestHtml = bestHtml.slice(0, endIdx);
 
     return { html: bestHtml.trim(), parts: parts.length, htmlPartsFound };
   }

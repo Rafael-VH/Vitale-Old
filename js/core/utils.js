@@ -29,9 +29,12 @@ Vitale.utils = (function(){
    * Muestra un mensaje en una caja de alerta con color según tipo.
    * Tipos: 'ok' | 'warn' | 'err' | 'info'.
    * Los mensajes de éxito se ocultan solos a los 8s.
+   * No hace nada si el id no existe (simétrico de clearAlert).
    */
   function alertMsg(id, msg, type){
     const a = document.getElementById(id);
+    if(!a) return;
+
     a.className = 'alert show alert-' + type;
     a.innerHTML = msg;
 

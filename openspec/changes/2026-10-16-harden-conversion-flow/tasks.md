@@ -58,26 +58,42 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase A: Pure logic (Strict TDD — RED first, headless)
 
-- [ ] A.1 **`alertMsg` null guard.** RED: in `tests/utils-hardening.test.js`, add a case asserting
+- [x] A.1 **`alertMsg` null guard.** RED: in `tests/utils-hardening.test.js`, add a case asserting
       `alertMsg('<missing-id>', 'x')` does not throw and is symmetric with the existing `clearAlert` guard
       case — must FAIL first. GREEN: add `if (!a) return;` in `js/core/utils.js:33-35`.
       (spec: `core-utilities` / Alert helper null-safety + helpers are symmetric)
-- [ ] A.2 **MHTML dead guard.** Remove the always-true `if (boundary)` at `js/core/mhtml-parser.js:124`
+      Done: RED observed (`Cannot set properties of null (setting 'className')`, exit=1) → GREEN
+      (13 ok / 0 fallos). JSDoc now states the no-op explicitly, as `clearAlert` does.
+- [x] A.2 **MHTML dead guard.** Remove the always-true `if (boundary)` at `js/core/mhtml-parser.js:124`
       (the function already returns early at `:85-89`). Behaviour-preserving by construction — no RED is
       possible for dead-code removal, so this is a refactor under the existing suite.
       Test: `suite` (all `tests/mhtml-charset.test.js` green) + `node --check js/core/mhtml-parser.js`.
-- [ ] A.3 **Fanfiction: prove the step dead (fixture).** Capture one real FFN page (or a trimmed
-      representative excerpt) as `tests/fixtures/fanfiction.html` and add
-      `tests/fanfiction-extraction.test.js` asserting the extracted main content for it.
+      Done: guard removed and its body dedented. `tests/mhtml-charset.test.js` 11 ok / exit=0;
+      `node --check` exit=0. No RED claimed — confirmed dead by the `if(!boundary){...return...}` at `:83-87`.
+- [x] A.3 **Fanfiction: prove the step dead.** Written as `tests/extractor-reachability.test.js` — ONE
+      suite covering A.3 + A.5, because the registry must be loaded to exercise the extractor at all and a
+      second file would duplicate the `DOMParser` stub. No real FFN page was available, and reachability is
+      a property of the cascade rather than of one page, so the suite pins the OBSERVABLE contract instead
+      of a scraped fixture: `#storycontent` long → the selector wins; `#storycontent` short but with the
+      exact string `custom`'s regex looked for → nothing rescues it; element absent → no site strategy;
+      threshold is exactly 200 (`199` out, `200` in). Every case passes both before and after the deletion,
+      so the guard survives the fix instead of being written to fit it.
       (spec: `html-extraction` / No unreachable strategy + Content threshold gate)
-- [ ] A.4 **Fanfiction: resolve the step.** If A.3 shows the `selectors` path is residue-free, DELETE the
-      unreachable `custom` step and its false comment (`js/extractors/fanfiction.js:12-13`). If A.3 shows
-      residue, KEEP the step and give it reach (make the FFN custom path run before the generic selector
-      pass), leaving A.3's test as the regression guard. Either way the comment must describe actual
-      behaviour. Test: `suite` — A.3's test green; no declared step is shadowed.
-- [ ] A.5 Verify no other extractor declares an unreachable step (same class of defect).
-      Test: `suite` — assertion over the registry that every declared `custom` has a documented condition
-      under which it can be reached; `node --check` on changed files.
+- [x] A.4 **Fanfiction: resolve the step.** Resolved as DELETE: the unreachable `custom` step and its false
+      comment are gone from `js/extractors/fanfiction.js`, leaving only `selectors: ['#storycontent']`.
+      **A genuine RED did exist**, contrary to the plan: the A.5 registry invariant FAILED naming
+      `fanfiction` before the deletion (exit=1) and passes after — so this is RED→GREEN, not a blind
+      refactor. Docs synced in the same task, because changing behaviour changes its documentation:
+      `docs/extractores.md:62-64` and the supported-sites table no longer claim Fanfiction uses `custom`,
+      and now warn that declaring both `selectors` and `custom` shadows the `custom`.
+      (`old/v1`, `old/v2` intentionally untouched — frozen.)
+      Test: `suite` — 6 suites / 63 passing; A.3's test green; no declared step is shadowed.
+- [x] A.5 Verify no other extractor declares an unreachable step (same class of defect).
+      Done: `fanfiction` was the ONLY extractor declaring both `selectors` and `custom`; the other six
+      (`ao3`, `webnovel`, `royalroad`, `wikipedia`, `substack`, `blogger`) declare `selectors` only. The
+      invariant is now enforced over the whole registry in `tests/extractor-reachability.test.js` (all
+      seven extractors are loaded and counted), so reintroducing the pattern fails the suite.
+      Test: `suite` — 6 suites / 63 passing; `node --check` exit=0 on all four changed JS files.
 
 ## Phase B: Modal behaviour + accessibility (needs browser checks)
 
