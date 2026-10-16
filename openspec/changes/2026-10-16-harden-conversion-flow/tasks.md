@@ -287,12 +287,42 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase E: Verification and docs
 
-- [ ] E.1 Full suite: `suite` — baseline 57 passing plus the new tests; none removed.
-- [ ] E.2 Browser checklist: every `modal-accessibility` scenario, the `assist-guide` inline-message
+- [x] E.1 Full suite: `suite` — baseline 57 passing plus the new tests; none removed.
+      Done: 6 suites green, 0 failures. Assertion counts — `extractor-reachability` 5,
+      `generic-semantic` 8, `mhtml-charset` 11, `prototype-safety` 15, `url-scheme-safety` 11,
+      `utils-hardening` 13 = **63** (the 57→63 jump is entirely the tests added in Phase A). No suite
+      removed or skipped. `node --check` clean on all six JS files touched by this change.
+- [x] E.2 Browser checklist: every `modal-accessibility` scenario, the `assist-guide` inline-message
       scenarios, the badge debounce, and the deduplicated instructions render.
-- [ ] E.3 `README.md` "Limitaciones conocidas": the review found the table does NOT cover these findings;
+      Done: one Puppeteer pass over `file:///.../index.html` confirmed — (a) instructions render once:
+      `#assistSteps` holds exactly 5 steps; (b) assist modal `role="dialog"`, `aria-modal="true"`,
+      `aria-labelledby="assistModalTitle"` (resolves to the title); opening moves focus into the dialog
+      (`#assistUrl`), Escape closes and restores focus to the trigger; (c) download modal same roles with
+      `aria-labelledby="downloadModalTitle"`; opening focuses `#filenameInput`, Escape closes and restores
+      focus to the (enabled) trigger — both by direct call and through the `{currentTarget}` event path
+      wired in `convert-panel.js`; (d) copy success renders an inline `.assist-dynamic` element
+      (class `alert alert-ok show`) with text "📋 URL copiada al portapapeles. Seguí los pasos de abajo."
+      while `window.alert` was never called (counter 0); (e) badge debounce — 10 `input` events give 0
+      immediate `updateFormatBadge` calls, 0.9 ms blocked, and exactly 1 call after the 150 ms window;
+      (f) `#convertAlert` has `role="status"` + `aria-live="polite"`.
+      **Honest notes**: focus restore is a no-op when the trigger is `disabled` (a disabled element cannot
+      take focus) — observed while probing the download button before a conversion; not a defect in real
+      use (the user clicks an enabled button), recorded, not coded around. The visual screenshot check was
+      not reviewable (the model cannot read images); equivalence rests on computed styles and DOM
+      assertions.
+- [x] E.3 `README.md` "Limitaciones conocidas": the review found the table does NOT cover these findings;
       record what this change resolves. Also fix the stale reference at `docs/limitaciones.md:40`
       (`assist-panel.js:62`).
-- [ ] E.4 Confirm untouched: `old/v1/`, `old/v2/`, `js/mdream-loader.js`, and the `conversion-engine-loading`
+      Done: the backlog table in `docs/limitaciones.md` (the page README links as "Limitaciones y
+      backlog") now records what this change resolved as rows **15–18** — modal a11y, badge hot-path,
+      `alertMsg` null guard + unreachable extractor step, and duplication/dead exports — with a note that
+      they are new findings from `harden-conversion-flow`, not a re-open of the original audit. Fixed the
+      stale reference `docs/limitaciones.md:40`: `assist-panel.js:62` → `assist-panel.js:104` (the current
+      `window.open` sink; `safeUrl` now lives at `:55`).
+- [x] E.4 Confirm untouched: `old/v1/`, `old/v2/`, `js/mdream-loader.js`, and the `conversion-engine-loading`
       spec. Test: `git diff --stat` shows none of them; `Vitale.mdream` surface still
       `{load, isLoaded, convert}`.
+      Done: `git diff --stat main..HEAD` reports no changes under `old/v1/`, `old/v2/`,
+      `js/mdream-loader.js`, or the `conversion-engine-loading` spec. `js/mdream-loader.js:71` still
+      returns `{ load, isLoaded, convert }`, confirmed at runtime: `Vitale.mdream` keys =
+      `["load","isLoaded","convert"]`.
