@@ -121,16 +121,16 @@
     </div>
 
     <div class="info" id="convertInfo"></div>
-    <div id="convertAlert" class="alert"></div>
+    <div id="convertAlert" class="alert" role="status" aria-live="polite"></div>
   </div>
 </div>
 
 <!-- ============================================================
      MODAL: elegir nombre del archivo a descargar
      ============================================================ -->
-<div class="modal-backdrop" id="downloadModal">
+<div class="modal-backdrop" id="downloadModal" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
   <div class="modal">
-    <h3>💾 Guardar archivo Markdown</h3>
+    <h3 id="downloadModalTitle">💾 Guardar archivo Markdown</h3>
     <p>Elige el nombre con el que quieres guardar el archivo. Se añadirá la extensión <code>.md</code> automáticamente.</p>
 
     <label>Nombre del archivo</label>
@@ -151,9 +151,9 @@
 <!-- ============================================================
      MODAL: cómo obtener el HTML de una página
      ============================================================ -->
-<div class="modal-backdrop" id="assistModal">
+<div class="modal-backdrop" id="assistModal" role="dialog" aria-modal="true" aria-labelledby="assistModalTitle">
   <div class="modal">
-    <h3>📋 Cómo obtener el HTML</h3>
+    <h3 id="assistModalTitle">📋 Cómo obtener el HTML</h3>
     <p>
       Los navegadores no pueden descargar páginas externas directamente (CORS). Además, en móvil Android los enlaces a ciertas webs se abren en su app instalada en lugar del navegador. Guarda la página a mano y súbela aquí.
     </p>

@@ -97,31 +97,71 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase B: Modal behaviour + accessibility (needs browser checks)
 
-- [ ] B.1 **Dialog semantics + live region (markup).** In `index.html`: add `role="dialog"`,
+- [x] B.1 **Dialog semantics + live region (markup).** In `index.html`: add `role="dialog"`,
       `aria-modal="true"`, `aria-labelledby` to `#downloadModal` (`:130`) and `#assistModal` (`:154`);
       add `role="status"` and `aria-live="polite"` to `#convertAlert` (`:95`).
       (spec: `modal-accessibility` / Dialog semantics + Status announcements)
       Test: `browser` — each dialog exposes the three dialog attributes; `#convertAlert` exposes the live
       region. Grep for `role=`/`aria-` in `index.html` no longer returns 0.
-- [ ] B.2 **Focus entry on open.** RED: `browser` check — focus `#btnAssist`, activate it, assert
+      Done: applied. **Line drift vs the plan**: `#convertAlert` is at `:124` (was already), not `:95`;
+      `#downloadModal` `:131`, `#assistModal` `:155`. RED observed in-browser pre-fix (fix stashed):
+      `role`/`aria-modal`/`aria-labelledby` all `null` on both backdrops and the live region `null`.
+      GREEN: `status|polite`, `dialog|true`, `dialog|true`, and each `aria-labelledby` resolves to its
+      visible `<h3>` (`downloadModalTitle` → "💾 Guardar archivo Markdown",
+      `assistModalTitle` → "📋 Cómo obtener el HTML").
+- [x] B.2 **Focus entry on open.** RED: `browser` check — focus `#btnAssist`, activate it, assert
       `document.activeElement` is inside `#assistModal`; currently FAILS (focus stays on the trigger).
       GREEN: move focus into the dialog on open in `js/assist-panel.js` (mirror `js/download-modal.js:55`).
       (spec: `modal-accessibility` / Focus entry on open — incl. pointer-open scenario)
-- [ ] B.3 **Escape dismissal.** RED: `browser` check — open `#assistModal` via `#btnAssist` with NO click
+      Done: RED observed pre-fix — `activeElement` = `btnAssist` (`focusInsideAssist=false`), i.e. focus
+      never left the trigger. GREEN: `activeElement` = `assistUrl`, inside the dialog. The focus call is
+      deferred with `setTimeout(..., 100)` on purpose: `.modal-backdrop` is `display:none` until `.show`
+      (`styles.css:469` / `:477`), and a synchronous `focus()` on a display-none element is a no-op. The
+      plan's "RED first" was NOT captured before writing the fix (see B.4 note) and was recovered by
+      stashing the fix and re-running the probe, so the RED is observed, not assumed.
+- [x] B.3 **Escape dismissal.** RED: `browser` check — open `#assistModal` via `#btnAssist` with NO click
       inside, press `Escape`, assert the modal is hidden; currently FAILS (the `keydown` listener is on the
       modal at `js/assist-panel.js:60`, so the event never arrives). GREEN: attach/route the dismissal so it
       works regardless of where focus was when the dialog opened. Repeat the check for `#downloadModal`.
       (spec: `modal-accessibility` / Escape dismissal — both scenarios)
-- [ ] B.4 **Focus restoration on close.** `browser` check for each close route (button, `Escape`, backdrop):
+      Done: RED observed pre-fix in BOTH dialogs — assist `assistClosedByEscape=false` (the listener lived
+      on `modal`, so a key event that never reached the modal was ignored) and download
+      `downloadClosedByEscapeFromButton=false`. **New finding**: the download modal bound `Escape` to
+      `filenameInput`'s own `keydown`, so `Escape` only worked while focus was in the input — with focus on
+      `#btnCancelDownload` it did nothing. GREEN: one `document`-level `keydown` per panel, guarded by
+      `modal.classList.contains('show')` so it only acts on an open dialog; the input-level `Escape` was
+      removed from `js/download-modal.js` (its `Enter` handler kept).
+- [x] B.4 **Focus restoration on close.** `browser` check for each close route (button, `Escape`, backdrop):
       assert `document.activeElement` is the trigger button afterwards. Wire in `js/assist-panel.js` /
       `js/download-modal.js`. (spec: `modal-accessibility` / Focus restoration on close)
-- [ ] B.5 **Replace native blocking dialogs with inline messages.** In `js/assist-panel.js`, replace the
+      Done: applied and verified GREEN for every route. **Not independently RED-able, recorded as such
+      instead of claiming a RED**: while B.2 is broken the focus never enters the dialog, so the pre-fix
+      probe reports the trigger by accident and the assertion passes for the wrong reason. The real proof
+      needs focus to be inside the dialog first, which only exists once B.2 is fixed: assist via backdrop
+      (`activeElement` = `#btnAssist`) and download via `Escape` from `#btnCancelDownload`
+      (`activeElement` = `#btnDownloadMd`). `open()` captures `lastFocus = trigger || document.activeElement`
+      and `close()` restores it; `downloadModal.open(evt)` normalises `evt.currentTarget` because
+      `js/convert-panel.js:240` passes the `MouseEvent` directly as the first argument.
+      `#btnGoConvert` deliberately does NOT restore focus — it navigates: it closes the dialog and focuses
+      `#htmlInput` (the destination), not the trigger.
+- [x] B.5 **Replace native blocking dialogs with inline messages.** In `js/assist-panel.js`, replace the
       four `alert()` calls (`:65`, `:89`, `:96`, `:101`) with the existing inline `showMessage()` surface.
       Update the harness: `tests/url-scheme-safety.test.js` stubs `global.alert` at `:24` and asserts on it
       at `:122`, `:149`, `:160` — repoint those three assertions at the inline message.
       RED first: the repointed assertions FAIL against the current implementation. GREEN: the swap.
       (spec: `assist-guide` / Non-blocking inline feedback — both scenarios)
       NOTE: this is a DELIBERATE behaviour change, not an incidental one.
+      Done: RED observed TWICE — headless (`4 ok, 7 fallos`, exit=1; the 7 failures are exactly the
+      inline-message assertions) and in-browser (`inlineMessageRendered=false` while the native `alert()`
+      WAS invoked with "Introduce una URL http:// o https:// válida."). GREEN: the four `alert()` calls now
+      route through `showMessage('warn', ...)`; suite back to 11 ok / 63 total, and
+      `assert.deepStrictEqual(alerts, [], 'no debe usar alert() nativo')` guards the regression.
+      Harness needed new stubs to see inline output at all: `document.createElement` → `created`,
+      `document.addEventListener` → `docHandlers`, `document.activeElement`, `makeEl.insertBefore`
+      accumulating into `e.inserted`, plus `resetLogs()` / `inlineMessages()` helpers.
+      Deliberately untouched: the two native `confirm()` calls in `js/convert-panel.js:60,:107` — the
+      `assist-guide` requirement scopes blocking-dialog removal to the assist panel, and expanding it here
+      would widen the change without a spec or a test.
 
 ## Phase C: Performance
 
