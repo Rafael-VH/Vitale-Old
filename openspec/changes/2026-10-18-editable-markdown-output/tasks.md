@@ -34,7 +34,7 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase A: Editable surface + edit-aware access paths (Strict TDD — RED first)
 
-- [ ] A.1 **RED: the save path ignores edits.** Create `tests/editable-output.test.js` following the existing
+- [x] A.1 **RED: the save path ignores edits.** Create `tests/editable-output.test.js` following the existing
       suite style (module loaded via `eval(fs.readFileSync(...))`, hand-rolled `makeEl` stubs, no framework).
       Stub `#mdOutput` as an element exposing a DISTINCT `value` (the edit) and `textContent` (the original),
       stub `Vitale.utils.downloadFile`, call `Vitale.downloadModal.confirm()` and assert `downloadFile`
@@ -43,8 +43,15 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       (spec: `editable-markdown-output` / Save uses the current text — both scenarios; Empty and error guards
       preserved — both scenarios)
       Test: `suite` — the new suite runs and the save-path case is RED (exit=1).
+      Done: `tests/editable-output.test.js`, 8 cases. RED observed BEFORE the fix (4 fallos / 4 ok): the save
+      path returned `'# Original'` instead of the edit, copy returned `'# Original'`, `convert` left `.value`
+      empty, and the counter listener was absent. Scope widened beyond this task's plan: the copy path and the
+      counter-on-typing path were slated as browser-only, but `convert-panel.setup()` turned out to be cheaply
+      stubbable (same pattern as `url-scheme-safety.test.js`), so both got real REDs instead of a documented
+      gap. Only the boundary effects are stubbed (`downloadFile`, `copyToClipboard`); `updateCounter`,
+      `alertMsg` and `esc` are the real implementations.
 
-- [ ] A.2 **The result surface becomes a plain-text control.** In `index.html`, replace the `#mdOutput`
+- [x] A.2 **The result surface becomes a plain-text control.** In `index.html`, replace the `#mdOutput`
       `<div class="output-box">` (`:110`) with a `<textarea class="output-box" id="mdOutput">` carrying the
       native `placeholder` with the text the CSS hint currently renders ("El resultado aparecerá aquí…") and
       `spellcheck="false"`; add `for="mdOutput"` to the "Markdown resultante" label (`:105`), which currently
@@ -53,21 +60,35 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       (spec: Editable result surface — all three scenarios; Accessible name for the result control)
       Test: `browser` — the element accepts text input; the hint is visible while empty; the label resolves to
       the control.
+      Done: `<textarea class="output-box" id="mdOutput" spellcheck="false" placeholder="El resultado aparecerá
+      aquí…"></textarea>` y `for="mdOutput"` en el label. Verificado en navegador: `tagName=TEXTAREA`,
+      `placeholder="El resultado aparecerá aquí…"`, `spellcheck=false`, sin `disabled`/`readOnly`, el label
+      resuelve, y `.output-box` conserva el aspecto (Fira Code, `white-space:pre-wrap`, `overflow-y:auto`,
+      `padding:16px`, `border-radius:9px`). Sin atributo `rows`.
 
-- [ ] A.3 **GREEN: one property for every access.** Switch the six sites from `.textContent` to `.value`:
+- [x] A.3 **GREEN: one property for every access.** Switch the six sites from `.textContent` to `.value`:
       `js/convert-panel.js:44` (clear), `:116` (markdown), `:134` (error), `:221` (Limpiar), `:236` (copy
       read), and `js/download-modal.js:30` (save read). Writes and reads MUST move together: mixing them
       reads `undefined` while the element is still a div and `''` on an untouched textarea. After this task,
       `grep -rn "mdOutput" js/` MUST show no `.textContent` access.
       (spec: Save uses the current text; Copy uses the current text)
       Test: `suite` — A.1 GREEN; every prior suite still green.
+      Done: los 6 sitios pasados a `.value` (`convert-panel.js:44,116,134,227,242`; `download-modal.js:30`).
+      Drift de líneas: `:221→:227` y `:236→:242` por las 6 líneas del listener de A.4. `grep` de
+      `mdOutput'\)\.(textContent|value)` → 6 coincidencias, TODAS `.value`, 0 `.textContent`. Suite completa:
+      8 nuevos + 5+8+11+15+11+13 previos = **71 aserciones, 0 fallos** (base 63). `node --check` en ambos
+      archivos: OK.
 
-- [ ] A.4 **Keep the counter honest.** Add an `input` listener on `#mdOutput` calling
+- [x] A.4 **Keep the counter honest.** Add an `input` listener on `#mdOutput` calling
       `Vitale.utils.updateCounter('mdOutput','outputCounter')`, so manual typing updates the counter (today it
       only follows programmatic writes — a defect this change would otherwise introduce). Do NOT modify
       `updateCounter` (`js/core/utils.js:76-86`): it already reads `.value` before `.textContent`.
       (spec: Counter reflects the current text — both scenarios)
       Test: `browser` — type and delete; the counter follows. `suite` unchanged.
+      Done: listener `input` sobre `#mdOutput` en `convert-panel.js`, justo después del bloque de `#htmlInput`.
+      `updateCounter` NO se tocó (`utils.js:76-86` ya prefiere `.value`). Verificado en navegador: escribir 28
+      caracteres lleva `#outputCounter` de `0 caracteres` a `28 caracteres`. Ya no depende solo del navegador:
+      la suite dispara el handler real y lo cubre.
 
 ## Phase B: Presentation for a form control (CSS only)
 
