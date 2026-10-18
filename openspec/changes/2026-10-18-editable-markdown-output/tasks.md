@@ -116,7 +116,7 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 - [ ] C.2 Browser checklist: every `editable-markdown-output` scenario, in one Puppeteer pass — edit then
       download contains the edit; edit then Copiar contains the edit; download without editing saves the
-      conversion unchanged; the counter follows typing; the hint shows before the first conversion; the empty
+      conversion unchanged; the counter follows typing; **Limpiar** empties the result box (its write site also changed property and no test pins it); the hint shows before the first conversion; the empty
       and `❌` paths still refuse; computed styles match the previous box.
       Note: screenshots cannot be reviewed (the model cannot read images) — equivalence rests on DOM
       assertions and computed styles, as in the previous change.
