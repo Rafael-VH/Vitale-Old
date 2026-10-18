@@ -41,7 +41,7 @@ Vitale.convertPanel = (function(){
 
   /** Limpia la salida de la conversión anterior. */
   function clearOutput(){
-    document.getElementById('mdOutput').textContent = '';
+    document.getElementById('mdOutput').value = '';
     Vitale.utils.updateCounter('mdOutput', 'outputCounter');
     document.getElementById('convertInfo').textContent = '';
     Vitale.utils.setDownloadEnabled(false);
@@ -113,7 +113,7 @@ Vitale.convertPanel = (function(){
       const prepared = Vitale.siteDetector.prepareHTML(raw);
       const md = Vitale.mdream.convert(prepared.html);
 
-      document.getElementById('mdOutput').textContent = md;
+      document.getElementById('mdOutput').value = md;
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
 
       const reduction = raw.length > 0 ? (100 - md.length/raw.length*100) : 0;
@@ -131,7 +131,7 @@ Vitale.convertPanel = (function(){
 
       if(md && md.length > 0) Vitale.utils.setDownloadEnabled(true);
     }catch(err){
-      document.getElementById('mdOutput').textContent = '❌ Error: ' + err.message;
+      document.getElementById('mdOutput').value = '❌ Error: ' + err.message;
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
       Vitale.utils.alertMsg('convertAlert', '❌ ' + Vitale.utils.esc(err.message), 'err');
       Vitale.utils.setDownloadEnabled(false);
@@ -170,6 +170,12 @@ Vitale.convertPanel = (function(){
     });
     Vitale.utils.updateCounter('htmlInput', 'inputCounter');
     Vitale.siteDetector.updateFormatBadge();
+
+    // El resultado es editable: el contador sigue lo que se escribe dentro,
+    // igual que en el campo de entrada. updateCounter ya lee `.value`.
+    document.getElementById('mdOutput').addEventListener('input', () => {
+      Vitale.utils.updateCounter('mdOutput', 'outputCounter');
+    });
 
     // Input de archivo
     fileInput.addEventListener('change', e => {
@@ -218,7 +224,7 @@ Vitale.convertPanel = (function(){
     // Botón Limpiar
     document.getElementById('btnClear').addEventListener('click', () => {
       htmlInput.value = '';
-      document.getElementById('mdOutput').textContent = '';
+      document.getElementById('mdOutput').value = '';
       resetCard();
       Vitale.utils.updateCounter('htmlInput', 'inputCounter');
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
@@ -233,7 +239,7 @@ Vitale.convertPanel = (function(){
 
     // Botón Copiar Markdown
     document.getElementById('btnCopyMd').addEventListener('click', async () => {
-      const md = document.getElementById('mdOutput').textContent;
+      const md = document.getElementById('mdOutput').value;
       if(!md || !md.trim() || md.startsWith('❌')){
         return Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que copiar.', 'warn');
       }

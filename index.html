@@ -102,12 +102,13 @@
 
       <div>
         <div class="field-head">
-          <label>Markdown resultante</label>
+          <label for="mdOutput">Markdown resultante</label>
           <div class="field-actions">
             <button class="btn btn-ghost btn-sm" id="btnCopyMd">📋 Copiar</button>
           </div>
         </div>
-        <div class="output-box" id="mdOutput"></div>
+        <textarea class="output-box" id="mdOutput" spellcheck="false"
+                  placeholder="El resultado aparecerá aquí…"></textarea>
         <div class="counter" id="outputCounter">0 caracteres</div>
       </div>
     </div>

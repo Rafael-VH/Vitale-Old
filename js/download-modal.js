@@ -27,7 +27,7 @@ Vitale.downloadModal = (function(){
    * Devuelve el texto, o null (avisando al usuario) si no lo es.
    */
   function markdownOrWarn(){
-    const md = document.getElementById('mdOutput').textContent;
+    const md = document.getElementById('mdOutput').value;
     if(!md || !md.trim() || md.startsWith('❌')){
       Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que descargar.', 'warn');
       return null;
