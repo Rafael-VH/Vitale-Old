@@ -275,15 +275,16 @@ textarea{min-height:240px;line-height:1.6}
 .output-box{
   background:var(--bg);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:16px;
-  min-height:240px;
+  /* Un <textarea> no crece con su contenido: sin altura explícita quedaba
+     clavado en 240px (min-height global) y scrolleaba, donde el div llegaba
+     a min(540px,62vh). Se fija la altura al tope anterior. */
+  height:min(540px,62vh);
   font-family:'Fira Code','JetBrains Mono','Consolas',monospace;
   font-size:.82rem;line-height:1.7;
   white-space:pre-wrap;word-break:break-word;
-  overflow-y:auto;max-height:min(540px,62vh);
+  overflow-y:auto;
   color:var(--text);
 }
-
-.output-box:empty::before{content:'El resultado aparecerá aquí…';color:var(--text-mute)}
 
 .info{font-size:.82rem;color:var(--text-dim);margin-top:12px;white-space:pre-line;line-height:1.7}
 .counter{font-size:.75rem;color:var(--text-mute);margin-top:6px;text-align:right;letter-spacing:.3px}
