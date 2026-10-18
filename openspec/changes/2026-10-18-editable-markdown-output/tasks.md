@@ -92,7 +92,7 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase B: Presentation for a form control (CSS only)
 
-- [ ] B.1 **Preserve the box geometry.** A textarea does not grow with its content, so with only the inherited
+- [x] B.1 **Preserve the box geometry.** A textarea does not grow with its content, so with only the inherited
       `min-height:240px` it would sit at 240 px and scroll, where the div used to grow up to
       `min(540px,62vh)` (`.output-box`, `styles.css:275-284`). Give `#mdOutput` an explicit height matching
       the previous cap, and verify how it interacts with the inherited `resize:vertical`
@@ -100,12 +100,31 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       (spec: Editable result surface — text preserved verbatim / Empty result shows the hint)
       Test: `browser` — computed height and overflow behaviour match the previous box; `resize` still works.
 
-- [ ] B.2 **Remove the dead hint rule.** Delete `.output-box:empty::before` (`styles.css:286`) — a form control
+      Done: `.output-box` (`styles.css:275-287`) cambia `min-height:240px` por `height:min(540px,62vh)`, y deja
+      el `max-height` fuera. Verificado en navegador (viewport de 600px de alto → 62vh = 372px): `height:372px`,
+      `min-height:240px` (lo sigue aplicando la regla global `textarea`, `styles.css:214`), `overflow-y:auto`
+      conservado, y con 3290 caracteres `scrollHeight:1884 > clientHeight:370` (scrollea de verdad).
+      `#htmlInput` intacto en 240px → el cambio quedó scopeado a `.output-box`.
+      DESVIACIÓN: se quitó `max-height:min(540px,62vh)`, que no estaba en el plan. Con `height` fijo igual al
+      tope, `max-height` solo bloqueaba el tirador: `resize:vertical` era de una sola dirección (achicar).
+      Ahora crece a 520px, se achica hasta el piso de 240px y restaura a 372px. Es el riesgo "Low" que
+      `exploration.md:189` había anotado como "set an explicit height if the interaction is poor".
+      TRADE-OFF DECLARADO: la caja vacía ahora mide 372px en vez de 240px, porque un textarea no se ajusta a su
+      contenido. `field-sizing:content` lo resolvería con fidelidad total, pero es solo-Chromium → descartado
+      por determinismo entre navegadores.
+
+- [x] B.2 **Remove the dead hint rule.** Delete `.output-box:empty::before` (`styles.css:286`) — a form control
       does not render it, and the hint now comes from the `placeholder` attribute. Confirm first that
       `#mdOutput` is that rule's only consumer (`old/v2/styles.css` carries its own frozen copy — do not
       touch it).
       (spec: Editable result surface — Empty result shows the hint)
       Test: `browser` — the hint still renders (via `placeholder`); grep shows no `:empty::before` remains.
+
+      Done: regla borrada. Prueba en runtime: el `content` computado de `::before` pasó de
+      `"El resultado aparecerá aquí…"` a `none`. Grep de `:empty::before` en `*.css`: solo sobrevive en
+      `old/v2/styles.css:269` y `old/v1/index.html:178`, ambos congelados. Confirmado antes de borrar que
+      `#mdOutput` era el único consumidor vivo. El hint sigue: el atributo `placeholder` está presente y el
+      texto exacto quedó intacto.
 
 ## Phase C: Verification and docs
 
