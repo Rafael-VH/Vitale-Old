@@ -275,16 +275,19 @@ textarea{min-height:240px;line-height:1.6}
 .output-box{
   background:var(--bg);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:16px;
-  /* Un <textarea> no crece con su contenido: sin altura explícita quedaba
-     clavado en 240px (min-height global) y scrolleaba, donde el div llegaba
-     a min(540px,62vh). Se fija la altura al tope anterior. */
-  height:min(540px,62vh);
+  /* Un <textarea> no crece con su contenido. El div vacío medía 240px (piso
+     global de textarea) y crecía hasta min(540px,62vh); se replica con
+     :placeholder-shown, que es verdadero solo cuando la caja está vacía. */
+  height:240px;
   font-family:'Fira Code','JetBrains Mono','Consolas',monospace;
   font-size:.82rem;line-height:1.7;
   white-space:pre-wrap;word-break:break-word;
   overflow-y:auto;
   color:var(--text);
 }
+
+/* Con texto, la caja recupera el tope de crecimiento del div anterior. */
+.output-box:not(:placeholder-shown){height:min(540px,62vh)}
 
 .info{font-size:.82rem;color:var(--text-dim);margin-top:12px;white-space:pre-line;line-height:1.7}
 .counter{font-size:.75rem;color:var(--text-mute);margin-top:6px;text-align:right;letter-spacing:.3px}
