@@ -145,7 +145,7 @@ No hay capa de estado. Los "datos" de la aplicación son:
 | Estado | Dónde vive |
 | --- | --- |
 | HTML/MHTML de entrada | `value` de `#htmlInput` |
-| Markdown resultante | `textContent` de `#mdOutput` |
+| Markdown resultante | `value` de `#mdOutput` (editable) |
 | Guía de obtención abierta | clase `.show` en `#assistModal` |
 | Motor cargado | variable `loaded` dentro de `Vitale.mdream` |
 | Conversión en curso | variable `processing` dentro de `Vitale.convertPanel` |

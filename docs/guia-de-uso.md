@@ -121,6 +121,10 @@ recuadro de carga.
 
 ## Guardar el resultado
 
+El recuadro **Markdown resultante** es editable: puedes corregir el texto antes
+de descargarlo o copiarlo. Se guarda y se copia siempre lo que ves ahí, con tus
+correcciones incluidas.
+
 El botón **Descargar .md** abre un modal donde eliges el nombre del archivo:
 
 - Si cargaste un archivo, el nombre se propone a partir de él (sin la extensión
