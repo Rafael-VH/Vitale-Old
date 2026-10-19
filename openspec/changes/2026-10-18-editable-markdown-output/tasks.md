@@ -185,3 +185,27 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       El diff completo toca 9 archivos: `index.html`, `js/convert-panel.js`, `js/download-modal.js`,
       `styles.css`, `tests/editable-output.test.js` y los 4 artefactos del change en `openspec/changes/`.
       Ningún spec existente modificado (promover specs es tarea de `archive`, no de `apply`).
+
+## Phase D: Follow-up (post-verification adjustment)
+
+- [x] D.1 **Empty box height.** El usuario pidió resolver el trade-off declarado en B.1: con
+      `height:min(540px,62vh)` la caja vacía medía 372px (antes de la feature: 240px). Restaurar la altura de
+      vacío conservando el crecimiento con contenido: `height:240px` como base y
+      `.output-box:not(:placeholder-shown){height:min(540px,62vh)}` — el placeholder solo está visible cuando la
+      caja está vacía, así que no hace falta JS.
+      (spec: Editable result surface — Empty result shows the hint)
+      Test: `browser` — vacía 240px, con contenido 372px, contenido largo capado y con scroll, Limpiar de vuelta
+      a 240px, resize todavía en ambas direcciones.
+
+      Done: `styles.css` `.output-box` pasa a `height:240px` y se añade
+      `.output-box:not(:placeholder-shown){height:min(540px,62vh)}`, con comentario. Verificado en navegador
+      (viewport 600px → 62vh = 372px): vacía 240px con `:placeholder-shown` true; tras conversión real 372px;
+      con 60 líneas extra sigue en 372px y scrollea (`scrollHeight:1527 > clientHeight:370`); tras Limpiar
+      vuelve a 240px con el hint, valor vacío y contador en 0; resize bidireccional (500px inline; 180px se
+      clampea al piso global de 240px); `#htmlInput` intacto en 240px. Resuelve el riesgo "High" de
+      `proposal.md:103` ("la caja parece más chica que antes") sin JS y sin `field-sizing` (solo-Chromium).
+      SUPERSEDE el trade-off de B.1 (la caja vacía ya no mide 372px).
+      LÍMITE: un Markdown corto igual ocupa 372px (un textarea no se ajusta a su contenido); el tirador lo
+      corrige, y un resize manual gana sobre la regla porque queda inline.
+      NOTA: el escaneo de `document.styleSheets` no encontró la regla (devolvió null) — limitación de la sonda;
+      la conducta 240px→372px según el estado solo puede venir de esa regla.
