@@ -59,9 +59,12 @@ applyExtractor(html, name):
     → null   (y la cascada cae al genérico)
 ```
 
-`custom` es la vía de escape cuando los selectores no bastan. Hoy el único
-extractor que lo usa es **Fanfiction.net**: en algunos MHTML el `innerHTML` de
-`#storycontent` arrastra residuos que un regex específico limpia mejor.
+`custom` es la vía de escape cuando los selectores no bastan. **Hoy ningún
+extractor la usa.** Fanfiction.net la declaraba (un regex sobre `#storycontent`),
+pero `selectors` corre antes y aquel paso exigía el mismo umbral de longitud, así
+que nunca podía aportar nada: se eliminó como código inalcanzable. La vía sigue
+soportada para sitios nuevos — si la usás, declarala **sin** `selectors`, porque
+con ambos el `custom` queda sombreado.
 
 ---
 
@@ -69,7 +72,7 @@ extractor que lo usa es **Fanfiction.net**: en algunos MHTML el `innerHTML` de
 
 | Clave | Etiqueta | Dominios | Selectores | `custom` |
 | --- | --- | --- | --- | --- |
-| `fanfiction` | Fanfiction | `fanfiction.net` | `#storycontent` | Sí (regex) |
+| `fanfiction` | Fanfiction | `fanfiction.net` | `#storycontent` | — |
 | `ao3` | AO3 | `archiveofourown.org` | `#chapters .userstuff.module`, `#chapters .userstuff`, `#workskin .userstuff.module`, `.userstuff.module`, `.userstuff` | — |
 | `webnovel` | Webnovel | `webnovel.com` | `.cha-content`, `.cha-words`, `#chapter-content`, `.chapter-content` | — |
 | `royalroad` | Royal Road | `royalroad.com` | `.chapter-content`, `.chapter-inner` | — |

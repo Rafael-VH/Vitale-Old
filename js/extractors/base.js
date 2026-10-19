@@ -101,19 +101,22 @@ Vitale.extractorBase = (function(){
    * Cascada completa:
    *   1. Extractor específico del sitio (si se conoce)
    *   2. Extractor genérico
-   * Devuelve { html, method }.
+   * Devuelve { html, method, filtered }: `filtered` es true si se recortó contenido,
+   * así el llamador no tiene que recalcularlo comparando longitudes.
    */
   function extractMainContent(html, siteKey){
-    if(!html) return { html, method: 'none' };
+    if(!html) return { html, method: 'none', filtered: false };
+
+    const originalLen = html.length;
 
     if(siteKey && Vitale.extractors.has(siteKey)){
       const result = applyExtractor(html, siteKey);
-      if(result) return result;
+      if(result) return { html: result.html, method: result.method, filtered: result.html.length < originalLen };
     }
 
     const generic = extractGeneric(html);
-    const filtered = generic.length < html.length;
-    return { html: generic, method: filtered ? 'generic' : 'none' };
+    const filtered = generic.length < originalLen;
+    return { html: generic, method: filtered ? 'generic' : 'none', filtered };
   }
 
   return { extractBySelectors, extractGeneric, applyExtractor, extractMainContent, MIN_CONTENT_LENGTH };

@@ -8,6 +8,10 @@
    campo, así que un `javascript:` o un `data:text/html,<script>…` pegado en el
    campo se abría como si fuera una página. Las pruebas disparan los handlers
    REALES de la guía (con DOM simulado), no una copia de la lógica.
+
+   Desde `harden-conversion-flow` el aviso ya no es un `alert()` nativo sino un
+   mensaje inline en el panel, así que las aserciones comprueban el mensaje
+   renderizado en `#assistSteps` Y que no se llamó a `alert()`.
    ========================================================================== */
 
 const fs = require('node:fs');
@@ -19,6 +23,8 @@ const assert = require('node:assert');
 const alerts = [];
 const openCalls = [];
 const clipboardCalls = [];
+const created = [];      // nodos creados por document.createElement
+const docHandlers = {};  // listeners registrados directamente sobre document
 
 global.window = globalThis;
 global.alert = (msg) => { alerts.push(String(msg)); };
@@ -35,7 +41,7 @@ function makeEl(id){
     firstChild: null,
     addEventListener(ev, fn){ e.handlers[ev] = fn; },
     querySelectorAll(){ return []; },
-    insertBefore(){},
+    insertBefore(child){ (e.inserted = e.inserted || []).push(child); },
     scrollIntoView(){}
   };
   elements[id] = e;
@@ -43,8 +49,10 @@ function makeEl(id){
 }
 
 global.document = {
+  activeElement: null,
   getElementById: (id) => elements[id] || null,
-  createElement: () => ({ className: '', style: {}, innerHTML: '' })
+  createElement: () => { const n = { className: '', style: {}, innerHTML: '' }; created.push(n); return n; },
+  addEventListener(ev, fn){ docHandlers[ev] = fn; }
 };
 
 makeEl('assistModal');
@@ -70,18 +78,30 @@ globalThis.Vitale.platform = { PLATFORM: 'desktop' };
 
 globalThis.Vitale.assistPanel.setup();
 
-/** Dispara el click del botón "Abrir". */
-function clickOpen(url){
+/** Limpia los registros de la última interacción. */
+function resetLogs(){
   alerts.length = 0;
   openCalls.length = 0;
+  clipboardCalls.length = 0;
+  created.length = 0;
+  elements.assistSteps.inserted = [];
+}
+
+/** Texto de los avisos inline insertados en `#assistSteps`. */
+function inlineMessages(){
+  return (elements.assistSteps.inserted || []).map(n => String(n.innerHTML)).join(' | ');
+}
+
+/** Dispara el click del botón "Abrir". */
+function clickOpen(url){
+  resetLogs();
   elements.assistUrl.value = url;
   return elements.btnOpenPage.handlers.click();
 }
 
 /** Dispara el click del botón "Copiar URL" y espera el async. */
 async function clickCopy(url){
-  alerts.length = 0;
-  clipboardCalls.length = 0;
+  resetLogs();
   elements.assistUrl.value = url;
   await elements.btnCopyUrl.handlers.click();
 }
@@ -119,7 +139,8 @@ async function main(){
         openCalls, [],
         'window.open fue llamado con ' + JSON.stringify(url)
       );
-      assert.ok(alerts.length > 0, 'debería avisar al usuario');
+      assert.match(inlineMessages(), /Introduce una URL/i, 'debería avisar inline en el panel');
+      assert.deepStrictEqual(alerts, [], 'no debe usar alert() nativo');
     });
   }
 
@@ -146,7 +167,8 @@ async function main(){
   await check('campo vacío: no abre y avisa', () => {
     clickOpen('   ');
     assert.deepStrictEqual(openCalls, []);
-    assert.ok(alerts.some(a => /Introduce una URL/i.test(a)));
+    assert.match(inlineMessages(), /Introduce una URL/i, 'debería avisar inline en el panel');
+    assert.deepStrictEqual(alerts, [], 'no debe usar alert() nativo');
   });
 
   /* --- La copia tampoco debe aceptar esquemas peligrosos ----------------- */
@@ -157,7 +179,8 @@ async function main(){
       clipboardCalls, [],
       'copyToClipboard fue llamado con javascript:'
     );
-    assert.ok(alerts.length > 0, 'debería avisar al usuario');
+    assert.match(inlineMessages(), /Introduce una URL/i, 'debería avisar inline en el panel');
+    assert.deepStrictEqual(alerts, [], 'no debe usar alert() nativo');
   });
 
   await check('copia una https:// válida', async () => {

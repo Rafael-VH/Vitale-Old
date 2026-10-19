@@ -120,13 +120,13 @@ Vitale.mhtml = (function(){
 
     if(!htmlPartsFound) return null;
 
-    if(boundary){
-      const endIdx = bestHtml.indexOf('--' + boundary);
-      if(endIdx !== -1) bestHtml = bestHtml.slice(0, endIdx);
-    }
+    const endIdx = bestHtml.indexOf('--' + boundary);
+    if(endIdx !== -1) bestHtml = bestHtml.slice(0, endIdx);
 
     return { html: bestHtml.trim(), parts: parts.length, htmlPartsFound };
   }
 
-  return { looksLikeMHTML, decodeQuotedPrintable, decodeBase64, extractHtmlFromMHTML };
+  // decodeBase64 se queda interno: lo usa extractHtmlFromMHTML para las partes
+  // base64, pero ningún otro módulo lo consume directamente.
+  return { looksLikeMHTML, decodeQuotedPrintable, extractHtmlFromMHTML };
 })();

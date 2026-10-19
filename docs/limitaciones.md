@@ -37,13 +37,20 @@ Auditoría independiente priorizada. Estado a la fecha de esta documentación.
 | 4 | Media | `core/mhtml-parser.js` | Ignoraba el charset de la parte MHTML: siempre UTF-8 → *mojibake* en `windows-1252`/`iso-8859-1` | ✅ **Resuelto**: charset por parte + `safeDecode()` |
 | 5 | Media | `core/charset.js` | `readFileSmart` buscaba `<meta charset>` solo en los primeros 4 KB; en `.mhtml` el HTML va después | ✅ **Resuelto**: era el mismo defecto que el #4; cubierto por `mhtml-charset.test.js` |
 | 6 | Media | `registry.js:44`, `site-detector.js:51` | Contaminación de prototipo: `detectSiteFromUrl('http://constructor/')` devolvía una función | ✅ **Resuelto**: `Object.create(null)` + `Object.hasOwn` |
-| 7 | Media | `assist-panel.js:62` | `window.open(url)` sin validar esquema; `javascript:`/`data:` controlables por el usuario | ✅ **Resuelto**: exigir `^https?://` antes de abrir/copiar |
+| 7 | Media | `assist-panel.js:104` | `window.open(url)` sin validar esquema; `javascript:`/`data:` controlables por el usuario | ✅ **Resuelto**: exigir `^https?://` antes de abrir/copiar |
 | 8 | Baja | `core/utils.js:82` | El fallback de portapapeles dejaba el `<textarea>` en el DOM si `execCommand` lanzaba | ✅ **Resuelto**: se quita el nodo en un `finally` |
 | 9 | Baja | `extractors/base.js:53` | Falsos negativos con `<article>`/`<main>` sin class/id | ✅ **Resuelto**: los semánticos no exigen class/id |
 | 11 | Baja | `core/utils.js:12` | `esc()` no escapaba comillas: seguro solo porque todo uso era contenido, no atributo | ✅ **Resuelto**: escapa `"` y `'` |
 | 12 | Baja | `convert-panel.js:219` | `btnClear` tocaba `className` directo sin pasar por el API de alertas | ✅ **Resuelto**: helper `clearAlert()` en `utils` |
 | **10** | Baja | `core/utils.js:96` | El BOM UTF-8 incondicional ensucia el inicio en algunas herramientas Markdown | ⚠️ **No se arregla**: quitarlo regresaría el problema de acentos en Android y el Bloc de notas de Windows. Hacerlo opcional requeriría una opción en la UI |
 | **13** | Baja | `core/mhtml-parser.js:106-116` | Si una parte HTML no declara `Content-Transfer-Encoding`, no se decodifica (default `7bit`) y las secuencias `=XX` quedan crudas | ⚠️ **No se arregla**: la heurística sugerida (`/=[0-9A-Fa-f]{2}/`) da falsos positivos en textos con `=` |
+| 15 | Media | `index.html`, `assist-panel.js`, `download-modal.js` | Modales sin semántica de diálogo (`role="dialog"`/`aria-modal`/`aria-labelledby`), foco no gestionado al abrir/cerrar, `Escape` atado al input en vez del modal, y feedback con `alert()` nativo | ✅ **Resuelto**: roles ARIA + foco de entrada/restauración + `Escape` por panel + mensajes inline con `showMessage()` |
+| 16 | Media | `convert-panel.js`, `site-detector.js` | El badge de formato re-escaneaba hasta 3 MB con 4 pasadas regex en **cada** tecla (≈8.6 ms por llamada) | ✅ **Resuelto**: debounce de 150 ms (`scheduleBadgeUpdate()`); el contador de caracteres sigue inmediato |
+| 17 | Baja | `core/utils.js`, `extractors/fanfiction.js` | `alertMsg` rompía si el id de la alerta no existía; el extractor de fanfiction tenía un paso `custom` inalcanzable | ✅ **Resuelto**: guard de `null` + paso muerto eliminado |
+| 18 | Baja | `platform.js`, `assist-panel.js`, `convert-panel.js`, `site-detector.js`, `extractors/base.js`, `core/mhtml-parser.js`, `styles.css` | Duplicación: instrucciones por plataforma, copy del upload-card, ramas de `prepareHTML`, cálculo repetido de `wasFiltered`, receta CSS de texto degradado, exports sin consumidor | ✅ **Resuelto**: fuente única en cada caso + receta CSS compartida |
+
+> Las filas 15–18 son hallazgos nuevos del change `harden-conversion-flow`
+> (endurecimiento + limpieza), no reaperturas de la auditoría original.
 
 ---
 

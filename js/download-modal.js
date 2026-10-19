@@ -7,7 +7,7 @@ window.Vitale = window.Vitale || {};
 Vitale.downloadModal = (function(){
 
   const DEFAULT_FILENAME = 'vitale';
-  let modal, input, preview;
+  let modal, input, preview, lastFocus;
 
   function sanitizeFilename(name){
     return (name || '')
@@ -27,7 +27,7 @@ Vitale.downloadModal = (function(){
    * Devuelve el texto, o null (avisando al usuario) si no lo es.
    */
   function markdownOrWarn(){
-    const md = document.getElementById('mdOutput').textContent;
+    const md = document.getElementById('mdOutput').value;
     if(!md || !md.trim() || md.startsWith('❌')){
       Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que descargar.', 'warn');
       return null;
@@ -35,8 +35,14 @@ Vitale.downloadModal = (function(){
     return md;
   }
 
-  function open(){
+  function open(evt){
     if(markdownOrWarn() === null) return;
+
+    // `evt` llega tal cual del listener de click (lo cablea convert-panel); si no
+    // es un evento, se usa el elemento activo como disparador.
+    const trigger = (evt && evt.currentTarget) ||
+      (evt && typeof evt.focus === 'function' ? evt : null);
+    lastFocus = trigger || document.activeElement;
 
     let suggested = DEFAULT_FILENAME;
     const fileNameDisplay = document.getElementById('fileNameDisplay').textContent;
@@ -57,6 +63,8 @@ Vitale.downloadModal = (function(){
 
   function close(){
     modal.classList.remove('show');
+    if(lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    lastFocus = null;
   }
 
   function confirm(){
@@ -86,10 +94,14 @@ Vitale.downloadModal = (function(){
     input.addEventListener('input', updatePreview);
     input.addEventListener('keydown', e => {
       if(e.key === 'Enter'){ e.preventDefault(); confirm(); }
-      if(e.key === 'Escape'){ e.preventDefault(); close(); }
     });
     modal.addEventListener('click', e => {
       if(e.target === modal) close();
+    });
+    // Escape en document: cierra aunque el foco no esté en el input (por ejemplo
+    // en un botón del modal tras tabular).
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && modal.classList.contains('show')) close();
     });
     document.getElementById('btnCancelDownload').addEventListener('click', close);
     document.getElementById('btnConfirmDownload').addEventListener('click', confirm);

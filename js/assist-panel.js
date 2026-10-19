@@ -7,12 +7,29 @@ window.Vitale = window.Vitale || {};
 Vitale.assistPanel = (function(){
 
   let modal;
+  let lastFocus;   // elemento que abrió la guía, para devolverle el foco al cerrar
 
-  /** Abre la guía. */
-  function open(){ modal.classList.add('show'); }
+  /**
+   * Abre la guía y mueve el foco dentro del diálogo.
+   * `trigger` es el elemento que la abrió (se le devuelve el foco al cerrar);
+   * si no se pasa, se usa el elemento activo en ese momento.
+   */
+  function open(trigger){
+    lastFocus = trigger || document.activeElement;
+    modal.classList.add('show');
+    // El foco va tras el reflow: un elemento todavía oculto no acepta focus().
+    setTimeout(() => {
+      const field = document.getElementById('assistUrl');
+      if(field && typeof field.focus === 'function') field.focus();
+    }, 100);
+  }
 
-  /** Cierra la guía. */
-  function close(){ modal.classList.remove('show'); }
+  /** Cierra la guía y devuelve el foco a quien la abrió. */
+  function close(){
+    modal.classList.remove('show');
+    if(lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+    lastFocus = null;
+  }
 
   /**
    * Inserta un aviso dinámico en la lista de pasos.
@@ -54,51 +71,40 @@ Vitale.assistPanel = (function(){
     modal = document.getElementById('assistModal');
 
     // Abrir / cerrar la guía
-    document.getElementById('btnAssist').addEventListener('click', open);
+    document.getElementById('btnAssist').addEventListener('click', e => open(e.currentTarget));
     document.getElementById('btnCloseAssist').addEventListener('click', close);
     modal.addEventListener('click', e => { if(e.target === modal) close(); });
-    modal.addEventListener('keydown', e => { if(e.key === 'Escape') close(); });
+    // Escape se escucha en document: la guía se abre desde un botón de fuera, así
+    // que el evento nunca llegaría al modal si el foco no estuviera dentro.
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape' && modal.classList.contains('show')) close();
+    });
 
     // Copiar URL
     document.getElementById('btnCopyUrl').addEventListener('click', async () => {
       const url = safeUrl(document.getElementById('assistUrl').value);
-      if(!url) return alert('Introduce una URL http:// o https:// válida.');
+      if(!url){ showMessage('warn', 'Introduce una URL http:// o https:// válida.'); return; }
 
       const ok = await Vitale.utils.copyToClipboard(url);
       if(ok){
-        let msg = '📋 <b>URL copiada al portapapeles.</b><br><br>';
-        const P = Vitale.platform.PLATFORM;
-
-        if(P === 'android'){
-          msg += '1️⃣ Abre Chrome → pega la URL → Enter.<br>' +
-                 '2️⃣ Menú ⋮ → <b>"Descargar página"</b>.<br>' +
-                 '3️⃣ Vuelve aquí y usa el panel de carga.';
-        } else if(P === 'ios'){
-          msg += '1️⃣ Abre Safari → pega la URL → Enter.<br>' +
-                 '2️⃣ Compartir → <b>"Guardar en Archivos"</b>.<br>' +
-                 '3️⃣ Vuelve aquí y usa el panel de carga.';
-        } else {
-          msg += '1️⃣ Pega la URL en el navegador.<br>' +
-                 '2️⃣ <b>Ctrl+U</b> → <b>Ctrl+A</b> → <b>Ctrl+C</b>.<br>' +
-                 '3️⃣ Vuelve aquí y pulsa <b>"Pegar"</b>.';
-        }
-
-        showMessage('ok', msg);
+        // Solo confirmación: los pasos por plataforma están definidos en un único
+        // lugar (Vitale.platform.renderAssistSteps) y se ven justo debajo.
+        showMessage('ok', '📋 <b>URL copiada al portapapeles.</b> Seguí los pasos de abajo.');
         document.getElementById('assistSteps').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }else{
-        alert('⚠️ No se pudo copiar. Selecciona el texto del campo manualmente.');
+        showMessage('warn', '⚠️ No se pudo copiar. Selecciona el texto del campo manualmente.');
       }
     });
 
     // Intentar abrir la URL
     document.getElementById('btnOpenPage').addEventListener('click', () => {
       const url = safeUrl(document.getElementById('assistUrl').value);
-      if(!url) return alert('Introduce una URL http:// o https:// válida.');
+      if(!url){ showMessage('warn', 'Introduce una URL http:// o https:// válida.'); return; }
 
       const opened = window.open(url, '_blank', 'noopener');
 
       if(!opened){
-        alert('⚠️ El navegador bloqueó la apertura. Usa "Copiar URL" y pégala manualmente.');
+        showMessage('warn', '⚠️ El navegador bloqueó la apertura. Usa "Copiar URL" y pégala manualmente.');
       } else if(Vitale.platform.PLATFORM === 'android'){
         setTimeout(() => {
           showMessage('warn',
@@ -108,9 +114,12 @@ Vitale.assistPanel = (function(){
       }
     });
 
-    // Ir al panel de carga
+    // Ir al panel de carga. Es una navegación, no un simple cierre: el foco va
+    // al destino (el campo de pegado), no de vuelta al disparador.
     document.getElementById('btnGoConvert').addEventListener('click', () => {
       close();
+      const target = document.getElementById('htmlInput');
+      if(target && typeof target.focus === 'function') target.focus();
       document.getElementById('uploadCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }

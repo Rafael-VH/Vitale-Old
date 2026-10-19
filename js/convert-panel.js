@@ -11,6 +11,10 @@ Vitale.convertPanel = (function(){
 
   let processing = false;
 
+  // Timer del debounce del badge de formato (ver scheduleBadgeUpdate)
+  let badgeTimer = null;
+  const BADGE_DELAY_MS = 150;
+
   // Elementos que se asignan en setup()
   let htmlInput, fileInput, uploadCard, btnConvert;
 
@@ -28,18 +32,7 @@ Vitale.convertPanel = (function(){
   /** Restaura el panel de carga a su estado inicial. */
   function resetCard(){
     uploadCard.classList.remove('loaded');
-
-    if(Vitale.platform.PLATFORM !== 'desktop'){
-      document.getElementById('uploadTitleText').innerHTML =
-        'Toca para <span class="hl">seleccionar un archivo</span>';
-      document.getElementById('uploadSubText').textContent =
-        'Se abrirá el selector de archivos del sistema';
-    } else {
-      document.getElementById('uploadTitleText').innerHTML =
-        'Suelta tu archivo aquí o <span class="hl">haz clic para elegirlo</span>';
-      document.getElementById('uploadSubText').textContent =
-        'Compatible con archivos guardados desde el navegador';
-    }
+    Vitale.platform.renderUploadCard();
 
     const fn = document.getElementById('fileNameDisplay');
     fn.textContent = '';
@@ -48,7 +41,7 @@ Vitale.convertPanel = (function(){
 
   /** Limpia la salida de la conversión anterior. */
   function clearOutput(){
-    document.getElementById('mdOutput').textContent = '';
+    document.getElementById('mdOutput').value = '';
     Vitale.utils.updateCounter('mdOutput', 'outputCounter');
     document.getElementById('convertInfo').textContent = '';
     Vitale.utils.setDownloadEnabled(false);
@@ -120,7 +113,7 @@ Vitale.convertPanel = (function(){
       const prepared = Vitale.siteDetector.prepareHTML(raw);
       const md = Vitale.mdream.convert(prepared.html);
 
-      document.getElementById('mdOutput').textContent = md;
+      document.getElementById('mdOutput').value = md;
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
 
       const reduction = raw.length > 0 ? (100 - md.length/raw.length*100) : 0;
@@ -138,7 +131,7 @@ Vitale.convertPanel = (function(){
 
       if(md && md.length > 0) Vitale.utils.setDownloadEnabled(true);
     }catch(err){
-      document.getElementById('mdOutput').textContent = '❌ Error: ' + err.message;
+      document.getElementById('mdOutput').value = '❌ Error: ' + err.message;
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
       Vitale.utils.alertMsg('convertAlert', '❌ ' + Vitale.utils.esc(err.message), 'err');
       Vitale.utils.setDownloadEnabled(false);
@@ -149,6 +142,20 @@ Vitale.convertPanel = (function(){
     }
   }
 
+  /**
+   * Difiere la actualización del badge de formato.
+   * `updateFormatBadge` corre cuatro regex sobre el texto completo (hasta 3 MB):
+   * repetirlo en cada tecla bloquea el hilo ~8 ms por pulsación. El contador de
+   * caracteres NO se difiere: es O(1) y debe sentirse instantáneo.
+   */
+  function scheduleBadgeUpdate(){
+    clearTimeout(badgeTimer);
+    badgeTimer = setTimeout(() => {
+      badgeTimer = null;
+      Vitale.siteDetector.updateFormatBadge();
+    }, BADGE_DELAY_MS);
+  }
+
   /** Conecta todos los eventos del panel. */
   function setup(){
     htmlInput  = document.getElementById('htmlInput');
@@ -156,13 +163,19 @@ Vitale.convertPanel = (function(){
     uploadCard = document.getElementById('uploadCard');
     btnConvert = document.getElementById('btnConvert');
 
-    // Contador y badge en vivo
+    // Contador (inmediato) y badge de formato (diferido al dejar de teclear)
     htmlInput.addEventListener('input', () => {
       Vitale.utils.updateCounter('htmlInput', 'inputCounter');
-      Vitale.siteDetector.updateFormatBadge();
+      scheduleBadgeUpdate();
     });
     Vitale.utils.updateCounter('htmlInput', 'inputCounter');
     Vitale.siteDetector.updateFormatBadge();
+
+    // El resultado es editable: el contador sigue lo que se escribe dentro,
+    // igual que en el campo de entrada. updateCounter ya lee `.value`.
+    document.getElementById('mdOutput').addEventListener('input', () => {
+      Vitale.utils.updateCounter('mdOutput', 'outputCounter');
+    });
 
     // Input de archivo
     fileInput.addEventListener('change', e => {
@@ -211,7 +224,7 @@ Vitale.convertPanel = (function(){
     // Botón Limpiar
     document.getElementById('btnClear').addEventListener('click', () => {
       htmlInput.value = '';
-      document.getElementById('mdOutput').textContent = '';
+      document.getElementById('mdOutput').value = '';
       resetCard();
       Vitale.utils.updateCounter('htmlInput', 'inputCounter');
       Vitale.utils.updateCounter('mdOutput', 'outputCounter');
@@ -226,7 +239,7 @@ Vitale.convertPanel = (function(){
 
     // Botón Copiar Markdown
     document.getElementById('btnCopyMd').addEventListener('click', async () => {
-      const md = document.getElementById('mdOutput').textContent;
+      const md = document.getElementById('mdOutput').value;
       if(!md || !md.trim() || md.startsWith('❌')){
         return Vitale.utils.alertMsg('convertAlert', '⚠️ No hay Markdown que copiar.', 'warn');
       }

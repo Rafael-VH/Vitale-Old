@@ -6,8 +6,8 @@
    2. Reset y base
    3. Marca / cabecera
    4. Barra de estado y pills
-   5. Pestañas
-   6. Inputs y textarea
+    5. Panel principal
+    6. Layout y campos de texto
    7. Botones
    8. Cajas de salida y contadores
    9. Panel de carga (upload-card)
@@ -77,6 +77,17 @@ body{
 .container{max-width:1440px;margin:0 auto}
 
 
+/* Receta compartida de texto con degradado. Se declara UNA vez y cada selector
+   aporta solo su propio `background-image` — longhand a propósito: el shorthand
+   `background` resetea `background-clip` a border-box y rompería el efecto. */
+.brand-text h1,
+.upload-title .hl,
+.upload-card.loaded .upload-title .hl{
+  background-clip:text;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
 /* ============================================================
    3. MARCA / CABECERA
    ============================================================ */
@@ -92,10 +103,7 @@ body{
 
 .brand-text h1{
   font-size:1.65rem;font-weight:800;letter-spacing:-.4px;
-  background:linear-gradient(135deg,#fff, #cbd5e1);
-  background-clip:text;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  background-image:linear-gradient(135deg,#fff, #cbd5e1);
   line-height:1.1;
 }
 
@@ -267,15 +275,19 @@ textarea{min-height:240px;line-height:1.6}
 .output-box{
   background:var(--bg);border:1px solid var(--border);
   border-radius:var(--radius-sm);padding:16px;
-  min-height:240px;
+  /* Un <textarea> no crece con su contenido. El div vacío medía 240px (piso
+     global de textarea) y crecía hasta min(540px,62vh); se replica con
+     :placeholder-shown, que es verdadero solo cuando la caja está vacía. */
+  height:240px;
   font-family:'Fira Code','JetBrains Mono','Consolas',monospace;
   font-size:.82rem;line-height:1.7;
   white-space:pre-wrap;word-break:break-word;
-  overflow-y:auto;max-height:min(540px,62vh);
+  overflow-y:auto;
   color:var(--text);
 }
 
-.output-box:empty::before{content:'El resultado aparecerá aquí…';color:var(--text-mute)}
+/* Con texto, la caja recupera el tope de crecimiento del div anterior. */
+.output-box:not(:placeholder-shown){height:min(540px,62vh)}
 
 .info{font-size:.82rem;color:var(--text-dim);margin-top:12px;white-space:pre-line;line-height:1.7}
 .counter{font-size:.75rem;color:var(--text-mute);margin-top:6px;text-align:right;letter-spacing:.3px}
@@ -354,12 +366,7 @@ textarea{min-height:240px;line-height:1.6}
   font-size:1.05rem;font-weight:700;color:var(--text);
   margin-bottom:6px;letter-spacing:-.2px;
 }
-.upload-title .hl{
-  background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  background-clip:text;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+.upload-title .hl{background-image:linear-gradient(135deg,var(--accent),var(--accent-2))}
 .upload-sub{font-size:.82rem;color:var(--text-mute);margin-bottom:14px}
 
 .upload-formats{
@@ -387,12 +394,7 @@ textarea{min-height:240px;line-height:1.6}
   color:var(--success);
 }
 .upload-card.loaded .upload-arrow{display:none}
-.upload-card.loaded .upload-title .hl{
-  background:linear-gradient(135deg,var(--success),#10b981);
-  background-clip:text;
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+.upload-card.loaded .upload-title .hl{background-image:linear-gradient(135deg,var(--success),#10b981)}
 
 /* Chip con el nombre del archivo. Vive fuera del <label> para que
    el usuario pueda seleccionar y copiar el texto sin reabrir el picker. */
