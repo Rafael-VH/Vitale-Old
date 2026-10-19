@@ -128,12 +128,17 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
 
 ## Phase C: Verification and docs
 
-- [ ] C.1 Full suite: `suite` — baseline 6 suites / 63 assertions, plus the new suite; none removed or skipped.
+- [x] C.1 Full suite: `suite` — baseline 6 suites / 63 assertions, plus the new suite; none removed or skipped.
       Also `node --check` on every changed JS file (the repo has no linter, formatter or type-checker; this is
       the only static gate).
       Test: the suite command exits 0 with the expected counts.
 
-- [ ] C.2 Browser checklist: every `editable-markdown-output` scenario, in one Puppeteer pass — edit then
+      Done: suite completa = **7 suites / 71 ok / 0 fallos**, todas `exit=0` (baseline 6/63 + 8 casos de la suite
+      nueva); ninguna removida ni salteada. `node --check` = 0 en `js/convert-panel.js`, `js/download-modal.js`
+      y `tests/editable-output.test.js` (única puerta estática del repo: no hay linter, formatter ni
+      type-checker).
+
+- [x] C.2 Browser checklist: every `editable-markdown-output` scenario, in one Puppeteer pass — edit then
       download contains the edit; edit then Copiar contains the edit; download without editing saves the
       conversion unchanged; the counter follows typing; **Limpiar** empties the result box (its write site also changed property and no test pins it); the hint shows before the first conversion; the empty
       and `❌` paths still refuse; computed styles match the previous box.
@@ -141,13 +146,42 @@ Review budget (session): 1600 lines — single PR comfortably inside it.
       assertions and computed styles, as in the previous change.
       Test: `browser`.
 
-- [ ] C.3 Docs sync if a description of the pipeline or the limitations table is affected (`README.md`,
+      Done: 11/11 escenarios en una sola pasada Puppeteer, con **conversión real** (`Vitale.mdream.isLoaded()`
+      = true, CDN disponible; sin stub de conversión). Evidencia: (1) tras convertir, `#mdOutput` es TEXTAREA
+      editable con `# Titulo` y contador `48 caracteres`; (2) escritura verbatim: saltos e indentación exactos
+      y `textContent === ''` (no reinterpreta markup); (3) placeholder visible antes de convertir y tras
+      Limpiar; (4) `label[for=mdOutput]` y `md.labels = ["Markdown resultante"]`; (5) editar → descargar entrega
+      el editado exacto (`## Nueva seccion` presente); (6) sin editar → lo descargado es la conversión intacta,
+      comparación EXACTA tras descartar mi primera comprobación, que solo medía el largo (corregida);
+      (7) editar → Copiar entrega el editado; (8) vacío → «⚠️ No hay Markdown que descargar.» y 0 descargas (el
+      guard corre antes de abrir el modal); (9) `❌` → mismo rechazo; (10)-(11) el contador sigue el tipeo (58) y
+      la conversión (48); Limpiar vacía salida+entrada, deja contadores en 0, deshabilita la descarga y mantiene
+      el hint. Estilos computados idénticos al diseño previo: `372px`, `min-height:240px`, `max-height:none`,
+      Fira Code, `pre-wrap`, `auto`, `16px`, `9px`, `vertical`, `::before: none`. `downloadFile` y
+      `copyToClipboard` stubbeados solo para capturar el payload (su escritura a disco no cambió).
+      LÍMITE DECLARADO: los screenshots no son revisables (el modelo no lee imágenes) → la equivalencia visual
+      se apoya en estilos computados y aserciones DOM, igual que en el change anterior.
+
+- [x] C.3 Docs sync if a description of the pipeline or the limitations table is affected (`README.md`,
       `docs/*`). If `docs/limitaciones.md` already lists this as a known limitation, mark it resolved and
       note the change name; if it does not, add nothing (do not invent a backlog row for a feature that now
       works).
       Test: grep the touched docs for the change name.
 
-- [ ] C.4 Confirm untouched: `old/v1/`, `old/v2/`, `js/mdream-loader.js`, and the existing specs
+      Done: SÍ aplica. `docs/arquitectura.md:148` documentaba la ubicación del estado como «`textContent` de
+      `#mdOutput`» — quedó falso al pasar a `.value`; corregido a «`value` de `#mdOutput` (editable)». Se añadió
+      una frase en `docs/guia-de-uso.md` (sección «Guardar el resultado») explicando que el recuadro es editable
+      y que se guarda/copia lo que se ve. `docs/limitaciones.md`: NO se toca — no listaba esto como limitación y
+      no se inventa una fila para algo que ahora funciona. `docs/mhtml-y-charsets.md:87`: fuera de alcance
+      (documenta la codificación, no la API). DESVIACIÓN: los docs aterrizan en el commit siguiente al código
+      (el código ya estaba en `5c5951c` y `8d4de86`); mismo change y sin drift funcional.
+
+- [x] C.4 Confirm untouched: `old/v1/`, `old/v2/`, `js/mdream-loader.js`, and the existing specs
       (`core-utilities`, `modal-accessibility`, `assist-guide`, `html-extraction`,
       `conversion-engine-loading`).
       Test: `git diff --stat` shows none of them.
+
+      Done: `git diff --stat 8173543..HEAD` sale vacío para `js/mdream-loader.js`, `openspec/specs/` y `old/`.
+      El diff completo toca 9 archivos: `index.html`, `js/convert-panel.js`, `js/download-modal.js`,
+      `styles.css`, `tests/editable-output.test.js` y los 4 artefactos del change en `openspec/changes/`.
+      Ningún spec existente modificado (promover specs es tarea de `archive`, no de `apply`).
