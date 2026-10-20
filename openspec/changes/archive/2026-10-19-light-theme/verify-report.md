@@ -97,15 +97,25 @@ this work.
 
 ## Limitations
 
+- **Visual inspection was performed post-archive, not before it.** This report was written while the
+  authoring model could not read images, so every visual claim rested on computed style values. After
+  archiving, the same code was rendered in headless Chromium with `prefers-color-scheme: light`
+  emulated and the screenshots were inspected directly. Findings: no inverted text anywhere, no
+  invisible control, no broken boundary; the visual hierarchy of the dark theme (h1 → tagline →
+  subtitle → uppercase labels) is preserved, and the brand mint survives in the CTA, the selected
+  segment, the `.MHTML` badge and the upload icon. Three polish observations, none a defect: the
+  light-mode hover (`#e8eef7` on white) is perceptually subtler than its dark counterpart (`#22304a`);
+  the disabled `Descargar .md` (`opacity:.38` on an already-light ghost) is nearly invisible; and the
+  mint CTA sits on near-white with a low luminance-contrast silhouette, relying on saturation and
+  shadow — a direct consequence of the documented decision to keep fills vivid. Screenshots were not
+  committed.
 - **No independent verifier.** The repo has no test-runner harness beyond `node`, and this runtime
   exposes no sub-agent tool. Verification was performed inline by the same agent that wrote the
   code. All claims above are backed by re-runnable commands and stored JSON evidence
   (`dark-golden.json`, `dark-after.json`, `light-probe.json`), but they were not adversarially
   reviewed by a second party.
-- **No visual inspection.** The model cannot read images; screenshots were not used as evidence.
-  Every visual claim rests on computed style values and composited contrast math, not on rendering.
 - **`@media` behaviour depends on the OS.** The light scheme was verified by emulating it in the
-  browser; a human eye-check on a light-mode OS was not performed.
+  browser; a human eye-check on a light-mode OS was still not performed.
 
 ## Files
 
