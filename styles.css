@@ -38,7 +38,11 @@
   --accent:#5eead4;
   --accent-2:#818cf8;
   --accent-glow:rgba(94,234,212,.18);
-  --accent-2-glow:rgba(129,140,248,.18);
+  /* --accent/--accent-2/--success son el MISMO valor en ambos esquemas: son los
+     rellenos de marca, no texto. Los tokens *-ink son sus equivalentes legibles
+     como texto/fondo sobre superficies claras (design.md §3.2). */
+  --accent-ink:#5eead4;
+  --success-ink:#34d399;
 
   --success:#34d399;
   --error:#f87171;
@@ -48,8 +52,36 @@
   --radius-sm:9px;
 
   --shadow-sm:0 1px 2px rgba(0,0,0,.3);
-  --shadow:0 8px 24px rgba(0,0,0,.35);
   --shadow-lg:0 20px 60px rgba(0,0,0,.5);
+}
+
+/* Esquema claro: solo el sistema operativo manda (sin toggle, sin JS, sin
+   color-scheme: alterna el scrollbar al estilo claro y rompería el oscuro).
+   Solo se re-declaran roles; los rellenos de marca quedan compartidos. */
+@media (prefers-color-scheme: light){
+  :root{
+    --bg:#f8fafc;
+    --bg-soft:#f1f5f9;
+    --surface:#ffffff;
+    --surface-2:#f1f5f9;
+
+    --border:#d8e0ec;
+    --border-soft:#e6ebf3;
+
+    --text:#0f172a;
+    --text-dim:#475569;
+    --text-mute:#556277;
+
+    --accent-glow:rgba(17,94,89,.16);
+    --accent-ink:#115e59;
+    --success-ink:#047857;
+
+    --error:#dc2626;
+    --warn:#92400e;
+
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+    --shadow-lg:0 20px 60px rgba(15,23,42,.14);
+  }
 }
 
 
@@ -154,7 +186,7 @@ body{
    (antes era un estilo inline en el HTML). */
 .pill-push{margin-left:auto}
 
-.pill-accent{background:var(--accent-glow);color:var(--accent);border-color:rgba(94,234,212,.3)}
+.pill-accent{background:var(--accent-glow);color:var(--accent-ink);border-color:rgba(94,234,212,.3)}
 .pill-warn{background:rgba(251,191,36,.12);color:var(--warn);border-color:rgba(251,191,36,.28)}
 
 /* Pill del sitio de origen detectado (Fanfiction, AO3, etc.)
@@ -207,7 +239,7 @@ textarea,input[type="url"],input[type="text"]{
 textarea::placeholder,input::placeholder{color:var(--text-mute)}
 
 textarea:focus,input:focus{
-  outline:none;border-color:var(--accent);
+  outline:none;border-color:var(--accent-ink);
   box-shadow:0 0 0 3px var(--accent-glow);
 }
 
@@ -329,7 +361,7 @@ textarea{min-height:240px;line-height:1.6}
 .upload-card:hover::before{opacity:1}
 
 .upload-card.drag{
-  border-color:var(--accent);
+  border-color:var(--accent-ink);
   border-style:solid;
   background:
     linear-gradient(180deg,rgba(94,234,212,.12),rgba(129,140,248,.08)),
@@ -337,7 +369,7 @@ textarea{min-height:240px;line-height:1.6}
   box-shadow:0 0 0 6px var(--accent-glow),0 12px 40px rgba(94,234,212,.25);
   transform:scale(1.01);
 }
-.upload-card.drag .upload-icon{transform:scale(1.15) rotate(-4deg);color:var(--accent)}
+.upload-card.drag .upload-icon{transform:scale(1.15) rotate(-4deg);color:var(--accent-ink)}
 .upload-card.drag .upload-arrow{opacity:0;transform:translateY(-12px)}
 
 .upload-icon{
@@ -345,7 +377,7 @@ textarea{min-height:240px;line-height:1.6}
   display:flex;align-items:center;justify-content:center;
   background:linear-gradient(135deg,rgba(94,234,212,.15),rgba(129,140,248,.15));
   border:1px solid rgba(94,234,212,.25);
-  color:var(--accent);
+  color:var(--accent-ink);
   transition:all .25s;
   position:relative;
 }
@@ -356,7 +388,7 @@ textarea{min-height:240px;line-height:1.6}
   width:24px;height:24px;border-radius:50%;
   background:var(--bg);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
-  color:var(--accent);font-size:.75rem;
+  color:var(--accent-ink);font-size:.75rem;
   transition:all .25s;
   animation:bob 2s ease-in-out infinite;
 }
@@ -379,7 +411,7 @@ textarea{min-height:240px;line-height:1.6}
   background:var(--bg);border:1px solid var(--border-soft);
   color:var(--text-dim);letter-spacing:.3px;
 }
-.fmt.fmt-special{color:var(--accent);border-color:rgba(94,234,212,.3);background:var(--accent-glow)}
+.fmt.fmt-special{color:var(--accent-ink);border-color:rgba(94,234,212,.3);background:var(--accent-glow)}
 
 .upload-card.loaded{
   border-style:solid;
@@ -391,7 +423,7 @@ textarea{min-height:240px;line-height:1.6}
 .upload-card.loaded .upload-icon{
   background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(16,185,129,.15));
   border-color:rgba(52,211,153,.4);
-  color:var(--success);
+  color:var(--success-ink);
 }
 .upload-card.loaded .upload-arrow{display:none}
 .upload-card.loaded .upload-title .hl{background-image:linear-gradient(135deg,var(--success),#10b981)}
@@ -402,7 +434,7 @@ textarea{min-height:240px;line-height:1.6}
   display:none;
   margin-top:14px;margin-bottom:20px;padding:9px 14px;
   background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);
-  border-radius:9px;font-size:.82rem;color:var(--success);
+  border-radius:9px;font-size:.82rem;color:var(--success-ink);
   font-family:'Fira Code',monospace;word-break:break-all;
   align-items:center;justify-content:center;gap:8px;
   user-select:text;
@@ -461,7 +493,7 @@ kbd{
 code{
   background:var(--surface-2);border-radius:4px;padding:1px 6px;
   font-family:'Fira Code',monospace;font-size:.82em;
-  color:var(--accent);border:1px solid var(--border-soft);
+  color:var(--accent-ink);border:1px solid var(--border-soft);
 }
 
 
@@ -499,7 +531,7 @@ code{
   font-size:.95rem;padding:13px 15px;
   background:var(--bg);border:2px solid var(--border);
 }
-.modal input[type="text"]:focus,.modal input[type="url"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.modal input[type="text"]:focus,.modal input[type="url"]:focus{border-color:var(--accent-ink);box-shadow:0 0 0 3px var(--accent-glow)}
 
 .modal-suffix{position:relative;display:flex;align-items:center}
 .modal-suffix input{padding-right:60px}
@@ -515,7 +547,7 @@ code{
   border:1px solid var(--border-soft);font-family:'Fira Code',monospace;
   word-break:break-all;line-height:1.5;
 }
-.modal-preview b{color:var(--accent)}
+.modal-preview b{color:var(--accent-ink)}
 
 .modal-actions{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
 .modal-actions .btn{padding:11px 22px}
@@ -574,4 +606,21 @@ code{
     transition-duration:.01ms!important;
     scroll-behavior:auto!important;
   }
+}
+
+/* Esquema claro: overrides de regla (deben ir al final para ganar a las reglas
+   base de igual especificidad). Ocho reglas one-off que ningún token cubre. */
+@media (prefers-color-scheme: light){
+  .brand-text h1{background-image:linear-gradient(135deg,#0f172a,#5b6a80)}
+  .btn:hover:not(:disabled){background:#e8eef7;border-color:#aebdd2}
+  .alert-warn{color:#92400e}
+  .alert-err {color:#b91c1c}
+  .alert-ok  {color:#047857}
+  .alert-info{color:#115e59}
+  .pill-site{color:#6d28d9}
+  .status-dot.ready{background:var(--success-ink)}
+
+  /* ponytail: los washes (alertas, píldoras, loaded, drag, body) y los alfas
+     del focus ring quedan como literales compartidos: igual que en oscuro.
+     Techo: si alguna vez necesitan re-tintar por esquema, subirlos a tokens. */
 }

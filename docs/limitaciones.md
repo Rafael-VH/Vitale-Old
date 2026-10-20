@@ -19,7 +19,7 @@ seguridad. Sirve como registro honesto de los bordes del sistema.
 | **Necesita internet al cargar** | El motor de conversión se descarga de un CDN la primera vez por sesión |
 | **Una conversión a la vez** | El botón se bloquea mientras procesa |
 | **Sin persistencia** | Recargar borra la entrada y la salida; no se usa `localStorage` |
-| **Tema único** | Solo existe el tema oscuro; no hay conmutador claro/oscuro |
+| **Tema sin conmutador** | Oscuro y claro siguen al sistema operativo (`prefers-color-scheme`); no hay conmutador manual ni persistencia |
 | **Un archivo por vez** | No hay conversión por lotes |
 | **BOM no configurable** | La salida siempre lleva BOM UTF-8 (ver bug #10) |
 

@@ -35,7 +35,7 @@ repositorio y abrir `index.html` es todo lo que hace falta.
 ```text
 Vitale-Old/
 ├── index.html              # Shell único: barra de estado, panel y 2 modales
-├── styles.css              # Tema oscuro completo (variables CSS + media queries)
+├── styles.css              # Temas oscuro y claro (variables CSS + media queries)
 ├── js/
 │   ├── main.js             # Bootstrap: carga el motor e inicializa los paneles
 │   ├── platform.js         # Detección Android / iOS / escritorio
@@ -162,11 +162,13 @@ Definido en `styles.css` con variables CSS en `:root`:
 
 - **Colores**: `--bg`, `--surface`, `--border`, `--text`, `--text-dim`,
   `--accent` (turquesa `#5eead4`), `--accent-2` (índigo `#818cf8`),
-  `--success`, `--error`, `--warn`.
+  `--success`, `--error`, `--warn`, `--accent-ink`, `--success-ink` (roles de
+  tinta para texto legible en ambos esquemas).
 - **Formas**: `--radius` (14px), `--radius-sm` (9px).
-- **Sombras**: `--shadow-sm`, `--shadow`, `--shadow-lg`.
+- **Sombras**: `--shadow-sm`, `--shadow-lg`.
 
-Es un tema **oscuro** único; no hay conmutador claro/oscuro.
+El tema sigue al sistema operativo vía `@media (prefers-color-scheme)`: oscuro
+(el predeterminado) y claro. No hay conmutador manual ni persistencia.
 
 ### Responsive
 

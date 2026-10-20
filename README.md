@@ -27,7 +27,7 @@ Contexto completo en la [Guía de uso](docs/guia-de-uso.md).
 
 ## Tecnologías
 
-- **HTML5 + CSS3** — variables CSS, grid, flexbox y media queries; tema oscuro.
+- **HTML5 + CSS3** — variables CSS, grid, flexbox y media queries; temas oscuro y claro.
 - **JavaScript ES6+ vanilla** — sin framework, sin bundler, **sin build**.
 - Módulos como IIFEs bajo un único namespace global `window.Vitale`.
 - **Motor de conversión**: [`@mdream/js@2.0.3`](https://github.com/huggingface/mdream),
@@ -75,7 +75,7 @@ contenido del ruido (menús, comentarios, publicidad). Ver
 ```text
 Vitale-Old/
 ├── index.html          # Shell: barra de estado, 2 pestañas, modal de descarga
-├── styles.css          # Tema oscuro completo (variables CSS + media queries)
+├── styles.css          # Temas oscuro y claro (variables CSS + media queries)
 ├── js/
 │   ├── core/           # utils, parser MHTML, detección de charset
 │   ├── extractors/     # registry + base + un archivo por sitio
