@@ -198,6 +198,22 @@ Vitale.convertPanel = (function(){
       if(f) loadFile(f);
     });
 
+    // Encabezado plegable del campo de Entrada. Colapsado por defecto: el
+    // textarea de entrada no aporta nada al usuario que ya trae el archivo por
+    // el panel de carga, y dejarlo abierto empujaba la caja de resultado.
+    const btnToggleInput = document.getElementById('btnToggleInput');
+    const inputCollapse = document.getElementById('inputCollapse');
+    // Estado inicial normalizado: colapsado, y el contenido oculto. Se fija acá
+    // y no solo en el HTML para que el estado sea determinista aunque el markup
+    // llegue sin los atributos.
+    btnToggleInput.setAttribute('aria-expanded', 'false');
+    inputCollapse.hidden = true;
+    btnToggleInput.addEventListener('click', () => {
+      const abierto = btnToggleInput.getAttribute('aria-expanded') === 'true';
+      btnToggleInput.setAttribute('aria-expanded', String(!abierto));
+      inputCollapse.hidden = abierto;
+    });
+
     // Botón Limpiar
     document.getElementById('btnClear').addEventListener('click', () => {
       htmlInput.value = '';

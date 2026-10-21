@@ -49,7 +49,14 @@ function makeEl(id){
     },
     addEventListener(ev, fn){ e.handlers[ev] = fn; },
     focus(){ global.document.activeElement = e; },
-    select(){}
+    select(){},
+    /* Un <button> real expone setAttribute/getAttribute; el toggle del campo de
+       entrada los usa para llevar aria-expanded. */
+    attributes: {},
+    setAttribute(k, v){ e.attributes[k] = String(v); },
+    getAttribute(k){ return Object.prototype.hasOwnProperty.call(e.attributes, k) ? e.attributes[k] : null; },
+    /* Un div colapsable lleva `hidden`; el estado plegado vive ahí. */
+    hidden: false
   };
   elements[id] = e;
   return e;
@@ -95,7 +102,7 @@ globalThis.Vitale.charset = {};
 [ 'mdOutput', 'outputCounter', 'inputCounter', 'filenameInput', 'filenamePreview',
   'downloadModal', 'btnCancelDownload', 'btnConfirmDownload', 'convertAlert',
   'convertInfo', 'htmlInput', 'fileInput', 'uploadCard', 'btnConvert',
-  'btnClear', 'btnCopyMd', 'btnDownloadMd'
+  'btnClear', 'btnCopyMd', 'btnDownloadMd', 'btnToggleInput', 'inputCollapse'
 ].forEach(makeEl);
 
 globalThis.Vitale.downloadModal.setup();
@@ -288,6 +295,48 @@ async function sinPegar(){
   });
 }
 
+/* --- Campo de entrada plegable ------------------------------------------- */
+
+/* El campo de Entrada arranca colapsado: el usuario que ya trae el archivo por
+   el panel de carga no necesita el textarea a la vista, y dejarlo abierto
+   empujaba la caja de resultado. El toggle es manual, sin persistencia. */
+async function entradaPlegable(){
+  await check('#8: el campo de entrada arranca colapsado', () => {
+    assert.strictEqual(
+      elements.btnToggleInput.getAttribute('aria-expanded'), 'false',
+      'el toggle debe declarar el estado colapsado'
+    );
+    assert.strictEqual(
+      elements.inputCollapse.hidden, true,
+      'el contenido de entrada debe arrancar oculto'
+    );
+  });
+
+  await check('#8: el toggle expande el campo', () => {
+    elements.btnToggleInput.handlers.click();
+    assert.strictEqual(
+      elements.btnToggleInput.getAttribute('aria-expanded'), 'true',
+      'tras el click el toggle debe declarar expandido'
+    );
+    assert.strictEqual(
+      elements.inputCollapse.hidden, false,
+      'tras el click el contenido debe quedar visible'
+    );
+  });
+
+  await check('#8: el toggle vuelve a colapsar el campo', () => {
+    elements.btnToggleInput.handlers.click();
+    assert.strictEqual(
+      elements.btnToggleInput.getAttribute('aria-expanded'), 'false',
+      'un segundo click debe volver a colapsar'
+    );
+    assert.strictEqual(
+      elements.inputCollapse.hidden, true,
+      'un segundo click debe volver a ocultar el contenido'
+    );
+  });
+}
+
 async function main(){
   await guardar();
   await guardas();
@@ -295,6 +344,7 @@ async function main(){
   await convertir();
   await contadorAlTeclear();
   await sinPegar();
+  await entradaPlegable();
 
   console.log('\n  ' + pass + ' ok, ' + fail + ' fallos\n');
   if(fail) process.exit(1);

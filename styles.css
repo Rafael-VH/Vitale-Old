@@ -278,6 +278,29 @@ body{
 .field-head > label{margin-bottom:0}
 .field-actions{display:flex;gap:6px}
 
+/* Encabezado plegable del campo de Entrada. Es un <button> y no un div con
+   click: teclado y aria-expanded salen gratis, y el estado lo lee un lector de
+   pantalla. Empieza colapsado (aria-expanded="false" + hidden en el contenido). */
+.field-toggle{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:0;border:0;background:none;cursor:pointer;
+  font-family:inherit;font-size:.72rem;font-weight:600;
+  letter-spacing:.4px;text-transform:uppercase;color:var(--text-mute);
+}
+.field-toggle:hover{color:var(--accent-ink)}
+.field-toggle:focus-visible{outline:2px solid var(--accent-glow);outline-offset:3px;border-radius:4px}
+.field-toggle-icon{
+  display:inline-block;font-size:.7rem;color:var(--text-mute);
+  transition:transform .18s ease;
+}
+.field-toggle[aria-expanded="true"] .field-toggle-icon{transform:rotate(90deg)}
+.field-toggle[aria-expanded="true"]{color:var(--text)}
+
+/* El contenido plegable. `hidden` hace todo el trabajo; sin transición de
+   altura porque un textarea no la soporta sin medir el contenido, y el
+   colapso es instantáneo por diseño. */
+.field-collapse[hidden]{display:none}
+
 label{
   display:block;font-size:.72rem;color:var(--text-mute);
   margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:700;

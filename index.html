@@ -94,16 +94,23 @@
         <button class="btn btn-ghost btn-sm assist-open" id="btnAssist">❔ ¿Cómo obtengo el archivo?</button>
 
         <div class="field-head">
-          <label>Entrada (HTML o MHTML)</label>
+          <button type="button" class="field-toggle" id="btnToggleInput"
+                  aria-expanded="false" aria-controls="htmlInput"
+                  title="Expandir o contraer el campo de entrada">
+            <span class="field-toggle-icon" aria-hidden="true">▸</span>
+            <span>Entrada (HTML o MHTML)</span>
+          </button>
           <div class="field-actions">
             <button class="btn btn-ghost btn-sm" id="btnClear">🗑 Limpiar</button>
           </div>
         </div>
+        <div class="field-collapse" id="inputCollapse" hidden>
         <textarea id="htmlInput" placeholder="Pega aquí HTML puro o el contenido de un archivo .mhtml…">&lt;article&gt;
   &lt;h1&gt;Hola Mundo&lt;/h1&gt;
   &lt;p&gt;Este es un &lt;strong&gt;ejemplo&lt;/strong&gt;.&lt;/p&gt;
 &lt;/article&gt;</textarea>
         <div class="counter" id="inputCounter">0 caracteres</div>
+        </div>
       </div>
 
       <div>
