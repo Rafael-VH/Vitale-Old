@@ -146,6 +146,7 @@ No hay capa de estado. Los "datos" de la aplicación son:
 | --- | --- |
 | HTML/MHTML de entrada | `value` de `#htmlInput` |
 | Markdown resultante | `value` de `#mdOutput` (editable) |
+| Entrada plegada | `hidden` de `#inputCollapse` + `aria-expanded` de `#btnToggleInput` |
 | Guía de obtención abierta | clase `.show` en `#assistModal` |
 | Motor cargado | variable `loaded` dentro de `Vitale.mdream` |
 | Conversión en curso | variable `processing` dentro de `Vitale.convertPanel` |
@@ -195,8 +196,21 @@ quiebre:
 El corte de dos columnas va a **700px, no a 820px**: el criterio es el ANCHO, no
 la orientación. Un celular acostado (~844px) tiene el alto justo para dos
 columnas y las conserva; uno parado (~390px) apila. A 700px cada columna mide
-unos 313px, suficiente para el `textarea` monoespaciado (piso de 240px) más el
+unos 313px, suficiente para el `textarea` monoespaciado (piso de 170px) más el
 ícono, el título y los chips del panel de carga.
+
+#### Campo de entrada plegable
+
+La sección de **Entrada** arranca **colapsada**: el usuario que ya trae el archivo
+por el panel de carga no necesita el `textarea` `#htmlInput` a la vista, y
+dejarlo abierto empujaba la caja de resultado fuera del pliegue. El encabezado es
+un `<button>` (`#btnToggleInput`, con `aria-expanded` y `aria-controls`) que
+muestra u oculta el wrapper `.field-collapse`. El estado inicial lo fija
+`convert-panel.setup()`, no solo el markup, para que sea determinista.
+
+Con la entrada plegada, la altura de la columna izquierda cae de ~466px a ~265px
+y la página entra sin scroll en un portátil de 1366×768. El toggle es **manual y
+sin persistencia**: recargar la página vuelve a colapsarlo.
 
 Los botones usan `border: 1px solid transparent` en lugar de `border: none`
 para que un botón deshabilitado no cambie de tamaño, y `.btn` fija

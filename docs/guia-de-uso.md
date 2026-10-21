@@ -66,7 +66,7 @@ descarga inicial del motor de conversión desde un CDN (ver
 ## Flujo en Android
 
 1. Abre la guía con el botón **❔ ¿Cómo obtengo el archivo?** y pulsa
-   **Copiar URL**. Esto copia el enlace **sin abrirlo**, evitando que Android lo
+   **1. Copiar URL**. Esto copia el enlace **sin abrirlo**, evitando que Android lo
    redirija a la app instalada.
 2. Abre **Chrome** o **Firefox**, pega la URL y pulsa Enter.
 3. Menú <kbd>⋮</kbd> → **Descargar página**. Se guardará como `.mhtml`.
@@ -75,13 +75,13 @@ descarga inicial del motor de conversión desde un CDN (ver
 5. Pulsa **Convertir** → **Descargar**.
 
 Si al pulsar *Intentar abrir* se abrió una app en lugar del navegador, ciérrala
-y usa *Copiar URL*: es el comportamiento documentado en la propia guía.
+y usa *1. Copiar URL*: es el comportamiento documentado en la propia guía.
 
 ---
 
 ## Flujo en iOS
 
-1. Pulsa **Copiar URL**.
+1. Pulsa **1. Copiar URL**.
 2. Abre **Safari**, pega la URL y pulsa Enter.
 3. Botón **Compartir** → **Opciones** → **Página web** → **Guardar en Archivos**.
 4. Vuelve a Vitale y toca el panel de carga.
@@ -116,7 +116,7 @@ Se abre desde el botón **❔ ¿Cómo obtengo el archivo?**, bajo el recuadro de
 carga. Es una guía interactiva para el flujo manual: no descarga nada por sí
 sola, copia la URL, ofrece intentar abrirla, y muestra los pasos adaptados a tu
 plataforma (Android, iOS o escritorio). Se cierra con **Cerrar**, <kbd>Esc</kbd>
-o tocando fuera de la tarjeta. El botón **Ir a la conversión** cierra la guía y
+o tocando fuera de la tarjeta. El botón **2. Ir a la conversión** cierra la guía y
 lleva el foco al campo de entrada.
 
 ---

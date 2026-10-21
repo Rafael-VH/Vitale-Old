@@ -80,7 +80,7 @@ Get-ChildItem tests\*.test.js | ForEach-Object { node $_.FullName; if(-not $?) {
 ```
 
 Al terminar, cada script imprime cuántas aserciones pasaron. Estado actual:
-**57 aserciones, todas verdes.**
+**8 suites, 82 aserciones, todas verdes.**
 
 ### Cómo están escritos
 

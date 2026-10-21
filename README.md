@@ -32,7 +32,7 @@ Contexto completo en la [Guía de uso](docs/guia-de-uso.md).
 - Módulos como IIFEs bajo un único namespace global `window.Vitale`.
 - **Motor de conversión**: [`@mdream/js@2.0.3`](https://github.com/huggingface/mdream),
   cargado por `import()` dinámico desde CDN con CDN de respaldo.
-- **Tests**: scripts de Node sin framework (80 aserciones).
+- **Tests**: scripts de Node sin framework (82 aserciones).
 - **Publicación**: GitHub Pages, sirviendo la rama `main`.
 
 ---
@@ -44,7 +44,7 @@ Contexto completo en la [Guía de uso](docs/guia-de-uso.md).
 2. Guarda la página que quieras convertir (en escritorio <kbd>Ctrl</kbd>+<kbd>S</kbd>
    → *"Página web, un solo archivo (.mhtml)"*).
 3. Suelta el archivo (o pega el HTML).
-4. **⚡ Convertir a Markdown** → **💾 Descargar .md**.
+4. **Convertir** → **Descargar**.
 
 Instrucciones por plataforma (Android, iOS y escritorio) en la
 [Guía de uso](docs/guia-de-uso.md).
@@ -74,7 +74,7 @@ contenido del ruido (menús, comentarios, publicidad). Ver
 
 ```text
 Vitale-Old/
-├── index.html          # Shell: barra de estado, 2 pestañas, modal de descarga
+├── index.html          # Shell: barra de estado, panel de conversión y 2 modales
 ├── styles.css          # Temas oscuro y claro (tokens CSS + media queries + data-theme)
 ├── js/
 │   ├── core/           # utils, parser MHTML, detección de charset
