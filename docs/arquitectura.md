@@ -114,7 +114,7 @@ La excepción son los **extractores**: cada `<sitio>.js` llama a
       → charset.readFileSmart(file)            → string al #htmlInput
       → site-detector.updateFormatBadge()      → pills de formato y sitio
 
-[pegar]            navigator.clipboard.readText() → #htmlInput
+[pegar]            pegado nativo (Ctrl+V o mantener pulsado) → #htmlInput
 
 [btnConvert]       convert-panel.convert()
       → site-detector.prepareHTML(raw)
@@ -178,15 +178,25 @@ duplicados (el test de drift de `tests/theme.test.js` los mantiene idénticos).
 ### Responsive
 
 El layout es de una columna fluida con un ancho máximo, y pasa a dos columnas
-(`.grid-2`) en pantallas anchas. Puntos de quiebre:
+(`.grid-2`) en pantallas anchas. El panel de carga (`#uploadCard`) vive **dentro
+de la columna de entrada**, junto al campo `#htmlInput`: la columna izquierda es
+todo lo que *mete* contenido y la derecha todo lo que *sale*. Así los botones de
+acción no quedan bajo el pliegue en pantallas con alto de sobra. Puntos de
+quiebre:
 
 | Ancho | Qué cambia |
 | --- | --- |
-| `> 820px` | Layout a dos columnas, botones en fila |
-| `≤ 820px` | `.grid-2` a una columna; todos los botones llegan a 44px de alto; `background-attachment` a `scroll` (evita el jank de scroll en iOS) |
-| `≤ 640px` | Encabezados de campo apilados; botones de acción principal y del asistente a ancho completo |
+| `> 700px` | Layout a dos columnas (entrada \| resultado), botones en fila |
+| `≤ 700px` | `.grid-2` a una columna; se oculta el indicador ↓ de arrastre (no aplica a puntero táctil); todos los botones llegan a 44px de alto; `background-attachment` a `scroll` (evita el jank de scroll en iOS) |
+| `≤ 640px` | Encabezados de campo apilados; botones de acción principal y del asistente a ancho completo; chips de formato centrados |
 | `≤ 480px` | Modal con padding reducido y acciones apiladas; barra de estado más densa |
 | `prefers-reduced-motion` | Desactiva animaciones |
+
+El corte de dos columnas va a **700px, no a 820px**: el criterio es el ANCHO, no
+la orientación. Un celular acostado (~844px) tiene el alto justo para dos
+columnas y las conserva; uno parado (~390px) apila. A 700px cada columna mide
+unos 313px, suficiente para el `textarea` monoespaciado (piso de 240px) más el
+ícono, el título y los chips del panel de carga.
 
 Los botones usan `border: 1px solid transparent` en lugar de `border: none`
 para que un botón deshabilitado no cambie de tamaño, y `.btn` fija
