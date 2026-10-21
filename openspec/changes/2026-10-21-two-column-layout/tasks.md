@@ -4,18 +4,19 @@
 
 | | |
 |---|---|
-| **Estimated authored changed lines** | ~165 (additions + deletions) |
+| **Estimated authored changed lines** | ~165 forecast; **~230 actual** (T5b added ~65) |
 | **Files touched** | 8 |
 | **Chained PRs recommended** | No |
-| **400-line budget risk** | Low |
+| **1600-line budget risk** | Low |
 | **Decision needed before apply** | No |
 
-Breakdown: `index.html` ~40 (move block + delete button + 2 labels), `styles.css` ~75 (scoped card geometry +
-narrow variant + breakpoint), `js/convert-panel.js` ~25 (delete handler), `js/platform.js` ~10 (3 step
-strings), `tests/editable-output.test.js` ~5 (delete stub), `assist-guide/spec.md` ~0 (already written in
-Phase 2), `docs/arquitectura.md` ~8, `openspec/config.yaml` ~4.
+Breakdown: `index.html` ~40 (move block + delete button + 2 labels), `styles.css` ~140 (scoped card geometry +
+vertical reclaim + narrow variant + breakpoint), `js/convert-panel.js` ~25 (delete handler), `js/platform.js`
+~10 (3 step strings), `tests/editable-output.test.js` ~5 (delete stub), `assist-guide/spec.md` ~0 (already
+written in Phase 2), `docs/arquitectura.md` ~8, `openspec/config.yaml` ~6.
 
-At ~165 lines the change sits well inside the configured 1600-line review budget. No split needed.
+Even at the measured ~230 lines the change sits well inside the configured 1600-line review budget. No split
+needed. T5b was added after T10 measured a real fold overflow; it was not in the original forecast.
 
 ## Task Size
 
@@ -141,8 +142,33 @@ those names are wrong.
 - **Depends on:** T2-T7 (the count must reflect the final suite)
 - **Commit:** `docs(sdd): correct suite and assertion baseline`
 
-`openspec/config.yaml` declares `suite_count: 7` / `baseline_passing: 71`. The real state is 8 suites /
-80 assertions. Update both after the suite is green, so the recorded baseline matches what was observed.
+`openspec/config.yaml` declares `suite_count: 7` / `baseline_passing: 71`. The real state is **8 suites /
+82 assertions** (measured per-suite: 10+5+8+11+15+9+11+13). The old note also said 7 suites because
+`theme.test.js` was never counted. Update the count, the prose, the header comment, and the apply-phase
+`baseline 71 passing` line after the suite is green, so the recorded baseline matches what was observed.
+
+### T5b — Reclaim the vertical space so the actions fit
+
+- **Spec:** `entry-layout` — "The action buttons fit without a vertical page scroll"
+- **Route:** inline
+- **Depends on:** T5
+- **Commit:** `style(layout): reclaim vertical space so actions clear the fold`
+
+T10's first run measured the laptop viewport at `scrollHeight: 997` against `768` — the actions landed at
+`bottom: 898`, 130px under the fold. The two-column split was correct; the panel was simply too tall. This
+task is the measured fix, not a guess:
+
+1. `body` padding-top `28px` → `12px` (the panel already carries its own padding).
+2. `.subtitle` margin `14px 0 26px` → `10px 0 14px`.
+3. `.panel` padding `26px` → `16px`.
+4. `.grid-2` `gap:22px; margin-top:6px` → `gap:20px; margin-top:0`.
+5. `.output-box` empty height `240px` → `170px`; filled cap `min(540px,62vh)` → `min(300px,44vh)`;
+   `textarea` `min-height` `240px` → `170px`.
+6. `.upload-card` padding `20px 16px` → `14px`; `.upload-icon` `48px` → `40px`, margin `0 auto 8px`.
+7. `.assist-open` margin `18px` → `8px`; `.field-head` margin `8px` → `6px`;
+   `.btn-row.main-actions` margin-top `22px` → `12px`.
+
+After the fix the measured action bottom is `730` in a `768` window — inside the fold, empty and filled.
 
 ### T9 — Document the layout and breakpoints
 
@@ -167,12 +193,18 @@ verifiable headlessly. This pass carries the layout claims.
 
 Matrix:
 
-| View | Width | Expectation |
-|---|---|---|
-| Laptop | 1366×768 | Two columns; action buttons reachable with no vertical page scroll |
-| Tablet landscape | 1024×768 | Two columns |
-| Phone landscape | 844×390 | Two columns (inside the new breakpoint) |
-| Phone portrait | 390×844 | Stacked; card is a compact tap target |
+| View | Width | Expectation | Observed |
+|---|---|---|---|
+| Laptop | 1366×768 | Two columns; action buttons within the fold | 2 cols; action bottom **730** ≤ 768 |
+| Tablet landscape | 1024×768 | Two columns; action buttons within the fold | 2 cols; action bottom **750** ≤ 768 |
+| Tablet landscape | 1180×820 | Two columns; action buttons within the fold | 2 cols; action bottom **730** ≤ 820 |
+| Phone landscape | 844×390 | Two columns, stacked-by-height is accepted | 2 cols; **does not fit** — column content is ~460px of card+field+textarea against a 390px window |
+| Phone portrait | 390×844 | Stacked; card is a compact tap target | 1 col; stacked, scrolls by design |
+
+The 844×390 row was first written as a "must fit" cell. It is physically impossible: the entry column alone
+is `card 211 + assist 30 + field-head 30 + textarea 170 + counter 19 = 460px`, plus a `127px` fixed header
+and a `48px` action row. 844×390 is a phone held sideways, not a landscape tablet; the real landscape cases
+(1024×768, 1180×820) both fit. The requirement is scoped to the fold-fitting cases, not this one.
 
 States: drag-over, dropped/loaded (with file name), hover, focus on the card. Verify both schemes
 (auto, light, dark) on the moved card. Then activate "go to convert" in the assist modal and confirm
@@ -209,13 +241,13 @@ not verified — mark it plainly.
 ## Dependency graph
 
 ```
-T1 → T2 ─┬→ T3 → T4 → T5 ─┬→ T9 ─┐
-         │                 │      │
-         ├→ T7 ────────────┼──────┼→ T10 → T11 → T12
-         │                 │      │
-T6 ──────┘                 │      │
-                           │      │
-         T2..T7 ──────→ T8 ─┘      │
+T1 → T2 ─┬→ T3 → T4 → T5 → T5b ─┬→ T9 ─┐
+         │                        │      │
+         ├→ T7 ───────────────────┼──────┼→ T10 → T11 → T12
+         │                        │      │
+T6 ──────┘                        │      │
+                                  │      │
+         T2..T7 ──────────────→ T8 ┘      │
 ```
 
 T6 is independent of T1-T5 and may run in any order. T8 must follow the last source change so the recorded
@@ -225,3 +257,58 @@ count matches the final suite.
 
 One work-unit commit per task, in dependency order, on `feat/two-column-layout`. Tests, code, and docs stay
 together per commit. T10 and part of T11 produce evidence, not commits.
+
+## Log
+
+### T8 — config baseline corrected
+
+Committed `50bac7f`. `openspec/config.yaml`: `suite_count 7 → 8`, `baseline_passing 71 → 82`, the `context:`
+prose, the header comment, and the apply-phase `baseline 71 passing` line. The 82 was read per-suite, not
+carried over: 10+5+8+11+15+9+11+13. The earlier 80 in the plan was an arithmetic slip; `theme.test.js` (9)
+had never been counted either.
+
+### T5b — vertical reclaim, and why it existed
+
+T10's first measurement run: laptop 1366×768 gave `scrollHeight 997` / `viewport 768`, actions at
+`top 850 / bottom 898`. The goal of the change — the actions reachable without a vertical scroll — was
+*not* met, even though the two-column split was correct. The height breakdown showed where the space sat:
+`body` padding-top `28`, `.subtitle` margin-bottom `26`, `.panel` padding `26`, a `240px` textarea floor, and
+`.upload-card` at `191px` for ~148px of content.
+
+A simulation pass over candidate values found the combination that clears the fold before touching the file.
+The seven edits in T5b are that measured combination. After applying them: laptop `bottom 730`, tablet
+1024×768 `bottom 750`, tablet 1180×820 `bottom 730` — all inside the fold, both `empty` and `filled` states.
+
+### T10 — browser verification (observed)
+
+Runner: Playwright Node API, `chromium.launch({channel:'chrome'})`, served from `127.0.0.1:8765`.
+
+Layout:
+
+| Viewport | Columns | Card in entry column | Action bottom | Fits |
+|---|---|---|---|---|
+| 1366×768 | 2 | yes | 730 | yes |
+| 1024×768 | 2 | yes | 750 | yes |
+| 1180×820 | 2 | yes | 730 | yes |
+| 844×390 | 2 | yes | 774 | **no** (physical — 460px column vs 390px window) |
+| 390×844 | 1 (stacked) | yes | 1218 | no — stacked layout scrolls by design |
+
+Labels: `[Convertir] [Descargar]` in every viewport. `#btnPaste` absent (`getElementById` → null) in every
+viewport. Breakpoint collapse observed at 390px (1 column) versus 844px (2 columns), matching the 700px rule.
+
+Card states (1366×768): resting `border dashed`; hover/drag/loaded switch to `solid` with the transform
+transition applied; card visible and non-zero in all four. First keyboard `Tab` lands on `#themeToggle` with
+the accent `box-shadow` focus ring — the focus path is intact after the move.
+
+Schemes: `auto` (`data-theme` null) and `light` render the card border `rgb(216,224,236)`; `dark` renders
+`rgb(36,48,73)`. The card follows the theme tokens it already used.
+
+Assist navigation: `#btnAssist` opens `#assistModal`; "Ir a la conversión" (`#btnGoConvert`) focuses
+`#htmlInput` and leaves the card in view at `top 202` — the `assist-panel.js:123` `scrollIntoView` path still
+works after moving the card.
+
+Headless suite: 8/8 green after the CSS change (`editable-output`, `extractor-reachability`,
+`generic-semantic`, `mhtml-charset`, `prototype-safety`, `theme`, `url-scheme-safety`, `utils-hardening`).
+
+Not verified by observation: the CSS `:hover` border-color change did not register under `p.hover()` in
+headless Chrome (the transition transform applied, the border color did not). No requirement depends on it.
