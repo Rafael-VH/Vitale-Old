@@ -260,12 +260,41 @@ async function contadorAlTeclear(){
   });
 }
 
+/* --- Sin control de pegar dedicado --------------------------------------- */
+
+/* El botón Pegar solo pegaba si el navegador concedía clipboard-read; si no,
+   caía a un aviso que pedía pegar a mano. Un control que a veces no hace nada
+   es peor que ningún control: el pegado nativo ya funciona en el campo.
+   La prueba cubre los DOS lados del retiro, porque el stub del DOM taparía el
+   primero: si el handler sigue vivo, `getElementById('btnPaste')` resuelve el
+   stub y el botón "existe" para el test aunque no exista en la página. */
+async function sinPegar(){
+  await check('#7: ningún botón Pegar queda en el DOM', () => {
+    assert.strictEqual(
+      document.getElementById('btnPaste'), null,
+      'el stub #btnPaste sigue en el DOM simulado: el handler todavía lo busca'
+    );
+  });
+
+  await check('#7: los controles de entrada que sí funcionan siguen ahí', () => {
+    assert.strictEqual(
+      typeof elements.btnClear.handlers.click, 'function',
+      'Limpiar debe seguir registrado'
+    );
+    assert.strictEqual(
+      typeof elements.btnConvert.handlers.click, 'function',
+      'Convertir debe seguir registrado'
+    );
+  });
+}
+
 async function main(){
   await guardar();
   await guardas();
   await copiar();
   await convertir();
   await contadorAlTeclear();
+  await sinPegar();
 
   console.log('\n  ' + pass + ' ok, ' + fail + ' fallos\n');
   if(fail) process.exit(1);
