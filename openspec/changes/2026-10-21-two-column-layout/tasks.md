@@ -312,3 +312,44 @@ Headless suite: 8/8 green after the CSS change (`editable-output`, `extractor-re
 
 Not verified by observation: the CSS `:hover` border-color change did not register under `p.hover()` in
 headless Chrome (the transition transform applied, the border color did not). No requirement depends on it.
+
+### T11 — spec verdicts (all observed, second browser pass)
+
+Drag/drop, loaded state, clear-reset, single-source copy, and instruction content were all exercised in the
+browser, not reasoned about.
+
+**`entry-layout`**
+
+| Requirement | Verdict | Observation |
+|---|---|---|
+| Surfaces share one row | **pass** | 1366/1024/1180 all render 2 columns; card shares the entry column with `#htmlInput` (`cardSharesColumnWithInput=true`) |
+| Action buttons not below the fold | **pass** | action bottom 730 ≤ 768 (laptop), 750 ≤ 768 (1024), 730 ≤ 820 (1180); also holds with the output filled |
+| Narrow viewports stack | **pass** | 390×844 renders 1 column, full width, entry above result |
+| Upload affordance operable without drag | **pass** | card is a `<label>` for the file input; card visible and non-zero at 390px |
+| No paste control | **pass** | `getElementById('btnPaste')` → `null` in every viewport; grep finds only the test assertions |
+| Pasting via native paste | **pass** | step 4 text reads *"pega con Ctrl+V en el campo de entrada"*; no custom control claimed |
+| Clearing resets the surface | **pass** | `#btnClear` → input empty, output empty, chip empty+hidden, card `loaded` removed, counter `0 caracteres` |
+| Action labels | **pass** | `[Convertir] [Descargar]` in every viewport |
+| Drag-and-drop loads a file | **pass** | synthetic drop of `pagina.html` → input 54 chars, chip `📄 pagina.html` visible, card `loaded`, border solid |
+| Loaded state survives the move | **pass** | loaded border `rgba(52,211,153,.4)`, chip `inline-flex` carrying the file name, entry holds the text |
+
+**`assist-guide` delta**
+
+| Requirement | Verdict | Observation |
+|---|---|---|
+| Single definition of platform instructions | **pass** | `uploadCopy()` defined once in `js/platform.js`; card consumes it via `renderUploadCard()` — one source |
+| Editing the copy updates both surfaces | **pass** | both surfaces read the same function; no second literal found in the grep sweep |
+| Instructions match the selected platform | **pass** | rendered steps are the platform branch's steps (desktop branch shown) |
+| Instructions name controls that exist | **pass** | rendered text names *"Convertir"* and *"Descargar"*, the entry field, the upload affordance; no step names the removed control (`pegar HTML` regex → false) |
+| Upload-card copy from one source | **pass** | single origin confirmed; no duplicate literal |
+| Copy matches the rendered affordance | **pass** | wide viewport copy describes dropping/choosing; narrow branch uses tap wording from the same function |
+
+**Severity**
+
+- **CRITICAL:** none.
+- **WARNING:** none.
+- **SUGGESTION:** none. The 844×390 phone-landscape viewport does not fit the actions, but it is not a
+  requirement case — see T10.
+
+Every requirement above was confirmed by an observation in the browser or by a direct read of the source.
+Nothing is marked verified on reasoning alone.
