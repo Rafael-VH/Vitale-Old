@@ -94,7 +94,7 @@ globalThis.Vitale.charset = {};
 
 [ 'mdOutput', 'outputCounter', 'inputCounter', 'filenameInput', 'filenamePreview',
   'downloadModal', 'btnCancelDownload', 'btnConfirmDownload', 'convertAlert',
-  'convertInfo', 'htmlInput', 'fileInput', 'uploadCard', 'btnConvert', 'btnPaste',
+  'convertInfo', 'htmlInput', 'fileInput', 'uploadCard', 'btnConvert',
   'btnClear', 'btnCopyMd', 'btnDownloadMd'
 ].forEach(makeEl);
 

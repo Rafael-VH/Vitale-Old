@@ -198,29 +198,6 @@ Vitale.convertPanel = (function(){
       if(f) loadFile(f);
     });
 
-    // Botón Pegar
-    document.getElementById('btnPaste').addEventListener('click', async () => {
-      try{
-        const text = await navigator.clipboard.readText();
-        if(text){
-          htmlInput.value = text;
-          Vitale.utils.updateCounter('htmlInput', 'inputCounter');
-          Vitale.siteDetector.updateFormatBadge();
-          resetCard();
-          clearOutput();
-          Vitale.utils.alertMsg('convertAlert',
-            `✅ Pegado (${text.length.toLocaleString()} caracteres).`, 'ok');
-          return;
-        }
-      }catch(e){}
-
-      htmlInput.focus();
-      Vitale.utils.alertMsg('convertAlert',
-        '⚠️ Tu navegador no permite leer el portapapeles automáticamente.<br>' +
-        'El campo ya está enfocado: mantén pulsado dentro y elige <b>"Pegar"</b>.',
-        'warn');
-    });
-
     // Botón Limpiar
     document.getElementById('btnClear').addEventListener('click', () => {
       htmlInput.value = '';
