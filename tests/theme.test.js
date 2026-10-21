@@ -10,9 +10,16 @@
    literales de color fuera de `:root` que sobrevivían a cualquier cambio de
    tema porque nada los vigilaba.
 
-   Las aserciones 1–3 son el RED de este change (hoy fallan). La 4 pasa hoy y
-   se declara guard permanente: no es RED, es el check que impide que un
-   `var()` apunte a un token que nadie declaró.
+   Las aserciones 1–4 son guards permanentes del esquema claro; la 4 impide que
+   un `var()` apunte a un token que nadie declaró.
+
+   El change `theme-toggle` añade cinco guards más (5–9): el bloque explícito
+   `:root[data-theme="light"]` existe, declara exactamente lo mismo que el
+   bloque automático, el bloque automático no se aplica sobre un oscuro
+   explícito, el módulo declara los tres modos, y el markup aplica el modo
+   guardado antes del primer pintado. La duplicación es deliberada; sin este
+   test se pudre en silencio y el tema claro pasa a depender de CÓMO se llegó
+   a él.
    ========================================================================== */
 
 const fs = require('node:fs');
@@ -20,6 +27,10 @@ const path = require('node:path');
 const assert = require('node:assert');
 
 const css = fs.readFileSync(path.join(__dirname, '..', 'styles.css'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+const themeJsPath = path.join(__dirname, '..', 'js', 'theme.js');
+const themeJs = fs.existsSync(themeJsPath) ? fs.readFileSync(themeJsPath, 'utf8') : '';
 
 // Tokens de color que el diseño decide compartir entre esquemas (design.md §3.1):
 // son los de relleno, y oscurecerlos rompería el par relleno+tinta.
@@ -104,6 +115,94 @@ check('todo var(--x) usado está declarado en :root (guard)', () => {
   const undeclared = [...new Set(used)].filter(t => !rootTokens.has(t));
   assert.deepStrictEqual(undeclared, [],
     'var() sin token en :root: ' + undeclared.join(', '));
+});
+
+// --- theme-toggle: los tres modos y su capa de overrides --------------------
+
+/** Reglas de primer nivel dentro de un bloque: selector -> declaraciones. */
+function rules(source){
+  const out = new Map();
+  for(const m of source.matchAll(/([^{}]+)\{([^{}]*)\}/g)){
+    const sel = m[1].trim().replace(/\s+/g, ' ');
+    if(sel.startsWith('@')) continue;
+    out.set(sel, m[2].replace(/\s+/g, ' ').trim());
+  }
+  return out;
+}
+
+const DARK_GUARD = /^:root:not\(\[data-theme=["']dark["']\]\)/;
+const lightAttrBlock = block(/:root\[data-theme=["']light["']\]\s*\{/);
+
+check('styles.css declara un bloque :root[data-theme="light"]', () => {
+  assert.ok(lightAttrBlock, 'no se encontró :root[data-theme="light"] { ... }');
+});
+
+check('el bloque claro explícito declara lo mismo que el automático', () => {
+  assert.ok(lightBlock, 'falta el bloque @media (prefers-color-scheme: light)');
+  assert.ok(lightAttrBlock, 'falta el bloque :root[data-theme="light"]');
+
+  const auto = rules(lightBlock);
+  const explicit = rules(lightAttrBlock);
+  const KEY_AUTO = ':root:not([data-theme="dark"])';
+  const KEY_EXPLICIT = ':root[data-theme="light"]';
+
+  assert.ok(auto.has(KEY_AUTO), 'el bloque automático no declara tokens bajo ' + KEY_AUTO);
+  assert.ok(explicit.has(KEY_EXPLICIT), 'el bloque explícito no declara tokens');
+
+  assert.strictEqual(explicit.get(KEY_EXPLICIT), auto.get(KEY_AUTO),
+    'los tokens de color difieren entre el bloque automático y el explícito');
+
+  const strip = (map, rootKey) => [...map]
+    .filter(([sel]) => sel !== rootKey)
+    .map(([sel, decl]) => [sel.split(rootKey).join(':root').trim(), decl]);
+
+  assert.deepStrictEqual(strip(explicit, KEY_EXPLICIT), strip(auto, KEY_AUTO),
+    'los overrides de regla difieren entre el bloque automático y el explícito');
+});
+
+check('el bloque automático no se aplica sobre un oscuro explícito', () => {
+  assert.ok(lightBlock, 'falta el bloque @media (prefers-color-scheme: light)');
+
+  const sels = [...rules(lightBlock).keys()];
+  assert.ok(sels.length > 0, 'el bloque automático está vacío');
+  assert.ok(sels.some(s => DARK_GUARD.test(s)),
+    'ningún selector del bloque automático excluye [data-theme="dark"]');
+
+  const unguarded = sels.filter(s => !DARK_GUARD.test(s));
+  assert.deepStrictEqual(unguarded, [],
+    'selectores sin guard de oscuro explícito: ' + unguarded.join(', '));
+});
+
+check('js/theme.js declara los tres modos y la clave de almacenamiento', () => {
+  assert.ok(themeJs, 'no existe js/theme.js');
+  assert.ok(/localStorage/.test(themeJs), 'js/theme.js no usa localStorage');
+  assert.ok(/['"]vitale\.theme['"]/.test(themeJs), 'js/theme.js no declara la clave vitale.theme');
+
+  const arr = /\[[^\]]*['"]auto['"][^\]]*\]/.exec(themeJs);
+  assert.ok(arr, 'js/theme.js no declara una lista de modos que empiece por auto');
+
+  const list = [...arr[0].matchAll(/['"]([a-z]+)['"]/g)].map(m => m[1]);
+  assert.deepStrictEqual(list, ['auto', 'light', 'dark'],
+    'la lista de modos debe ser exactamente auto, light, dark');
+});
+
+check('index.html aplica el modo guardado antes del primer pintado', () => {
+  const link = html.indexOf('styles.css');
+  assert.ok(link > -1, 'index.html no enlaza styles.css');
+
+  const preHead = html.slice(0, link);
+  assert.ok(/localStorage/.test(preHead) && /data-theme/.test(preHead),
+    'falta el script pre-paint (localStorage + data-theme) antes del stylesheet');
+
+  const at = html.indexOf('theme-toggle');
+  assert.ok(at > -1, 'falta el control .theme-toggle');
+  const tag = html.slice(at, html.indexOf('>', at) + 1);
+  assert.ok(/aria-label=/.test(tag), 'el control no tiene aria-label');
+
+  const themeIdx = html.indexOf('js/theme.js');
+  const mainIdx = html.indexOf('js/main.js');
+  assert.ok(themeIdx > -1, 'index.html no carga js/theme.js');
+  assert.ok(themeIdx < mainIdx, 'js/theme.js debe cargarse antes de js/main.js');
 });
 
 console.log('\n  ' + pass + ' ok, ' + fail + ' fallos\n');

@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vitale — HTML → Markdown</title>
+  <!-- Pre-paint: restaura el tema elegido ANTES del primer pintado.
+       No es módulo ni lleva defer: defer corre tras parsear, cuando
+       ya puede haber pintado. Solo lee y aplica el atributo. -->
+  <script>
+  (function(){try{var m=localStorage.getItem('vitale.theme');
+  if(m==='light'||m==='dark')document.documentElement.setAttribute('data-theme',m);}catch(e){}})();
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -37,6 +44,7 @@
     <span class="pill pill-push" id="platformBadge">Detectando…</span>
     <span class="pill" id="formatBadge">Sin datos</span>
     <span class="pill pill-site" id="siteBadge" style="display:none;">—</span>
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Tema" hidden></button>
   </div>
 
   <!-- ============================================================
@@ -217,6 +225,7 @@
 <!-- 4. Paneles -->
 <script src="js/convert-panel.js"></script>
 <script src="js/assist-panel.js"></script>
+<script src="js/theme.js"></script>
 
 <!-- 5. Bootstrap -->
 <script src="js/main.js"></script>

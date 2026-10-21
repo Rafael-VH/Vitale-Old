@@ -19,6 +19,7 @@ window.Vitale = window.Vitale || {};
     Vitale.downloadModal.setup();
     Vitale.convertPanel.setup();
     Vitale.assistPanel.setup();
+    Vitale.theme.init();
 
     // Estado inicial
     Vitale.utils.setDownloadEnabled(false);

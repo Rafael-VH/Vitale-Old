@@ -55,11 +55,18 @@
   --shadow-lg:0 20px 60px rgba(0,0,0,.5);
 }
 
-/* Esquema claro: solo el sistema operativo manda (sin toggle, sin JS, sin
-   color-scheme: alterna el scrollbar al estilo claro y rompería el oscuro).
-   Solo se re-declaran roles; los rellenos de marca quedan compartidos. */
+/* Esquema claro. Dos caminos llevan al MISMO bloque de tokens:
+     1. automático — el sistema operativo, cuando el usuario no fijó nada
+        (`auto` = ausencia del atributo `data-theme`);
+     2. explícito — `data-theme="light"`, y entonces manda sobre un SO oscuro.
+   El guard `:not([data-theme="dark"])` es lo que permite que un oscuro
+   explícito gane sobre un SO claro sin tocar el cascade base.
+   La duplicación es deliberada (design.md §4); tests/theme.test.js asserta que
+   ambos bloques declaran exactamente lo mismo, así no pueden divergir.
+   Sin `color-scheme`: alterna el scrollbar al estilo claro y rompería el
+   oscuro. Solo se re-declaran roles; los rellenos de marca quedan compartidos. */
 @media (prefers-color-scheme: light){
-  :root{
+  :root:not([data-theme="dark"]){
     --bg:#f8fafc;
     --bg-soft:#f1f5f9;
     --surface:#ffffff;
@@ -82,6 +89,32 @@
     --shadow-sm:0 1px 2px rgba(15,23,42,.06);
     --shadow-lg:0 20px 60px rgba(15,23,42,.14);
   }
+}
+
+/* Mismos tokens, alcanzados por elección explícita. Sin media query: aplica
+   también sobre un SO oscuro. Copiar verbatim; el test de drift lo vigila. */
+:root[data-theme="light"]{
+  --bg:#f8fafc;
+  --bg-soft:#f1f5f9;
+  --surface:#ffffff;
+  --surface-2:#f1f5f9;
+
+  --border:#d8e0ec;
+  --border-soft:#e6ebf3;
+
+  --text:#0f172a;
+  --text-dim:#475569;
+  --text-mute:#556277;
+
+  --accent-glow:rgba(17,94,89,.16);
+  --accent-ink:#115e59;
+  --success-ink:#047857;
+
+  --error:#dc2626;
+  --warn:#92400e;
+
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow-lg:0 20px 60px rgba(15,23,42,.14);
 }
 
 
@@ -196,6 +229,26 @@ body{
   color:#c4b5fd;
   border-color:rgba(167,139,250,.3);
 }
+
+/* Control de esquema (auto/claro/oscuro). Se apoya en la geometría de .pill y
+   en el hover de .btn-ghost, así hereda ambos esquemas sin valores nuevos.
+   Nace con `hidden` en el HTML: sin JS no habría nada que alternar, y un botón
+   muerto es peor que ninguno. theme.js lo revela. */
+.theme-toggle{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;padding:0;flex-shrink:0;
+  background:transparent;color:var(--text-dim);
+  border:1px solid var(--border-soft);border-radius:100px;
+  cursor:pointer;font-family:inherit;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.theme-toggle[hidden]{display:none}
+.theme-toggle:hover{background:var(--surface-2);color:var(--text);border-color:var(--border)}
+.theme-toggle:focus-visible{
+  outline:none;border-color:var(--accent-ink);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.theme-toggle svg{width:15px;height:15px;display:block}
 
 
 /* ============================================================
@@ -609,18 +662,28 @@ code{
 }
 
 /* Esquema claro: overrides de regla (deben ir al final para ganar a las reglas
-   base de igual especificidad). Ocho reglas one-off que ningún token cubre. */
+   base de igual especificidad). Ocho reglas one-off que ningún token cubre.
+   Mismo reparto que los tokens: automático con guard, y explícito sin media. */
 @media (prefers-color-scheme: light){
-  .brand-text h1{background-image:linear-gradient(135deg,#0f172a,#5b6a80)}
-  .btn:hover:not(:disabled){background:#e8eef7;border-color:#aebdd2}
-  .alert-warn{color:#92400e}
-  .alert-err {color:#b91c1c}
-  .alert-ok  {color:#047857}
-  .alert-info{color:#115e59}
-  .pill-site{color:#6d28d9}
-  .status-dot.ready{background:var(--success-ink)}
+  :root:not([data-theme="dark"]) .brand-text h1{background-image:linear-gradient(135deg,#0f172a,#5b6a80)}
+  :root:not([data-theme="dark"]) .btn:hover:not(:disabled){background:#e8eef7;border-color:#aebdd2}
+  :root:not([data-theme="dark"]) .alert-warn{color:#92400e}
+  :root:not([data-theme="dark"]) .alert-err {color:#b91c1c}
+  :root:not([data-theme="dark"]) .alert-ok  {color:#047857}
+  :root:not([data-theme="dark"]) .alert-info{color:#115e59}
+  :root:not([data-theme="dark"]) .pill-site{color:#6d28d9}
+  :root:not([data-theme="dark"]) .status-dot.ready{background:var(--success-ink)}
 
   /* ponytail: los washes (alertas, píldoras, loaded, drag, body) y los alfas
      del focus ring quedan como literales compartidos: igual que en oscuro.
      Techo: si alguna vez necesitan re-tintar por esquema, subirlos a tokens. */
 }
+
+:root[data-theme="light"] .brand-text h1{background-image:linear-gradient(135deg,#0f172a,#5b6a80)}
+:root[data-theme="light"] .btn:hover:not(:disabled){background:#e8eef7;border-color:#aebdd2}
+:root[data-theme="light"] .alert-warn{color:#92400e}
+:root[data-theme="light"] .alert-err {color:#b91c1c}
+:root[data-theme="light"] .alert-ok  {color:#047857}
+:root[data-theme="light"] .alert-info{color:#115e59}
+:root[data-theme="light"] .pill-site{color:#6d28d9}
+:root[data-theme="light"] .status-dot.ready{background:var(--success-ink)}
