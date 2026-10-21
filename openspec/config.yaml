@@ -3,6 +3,8 @@
 # Corrected 2026-10-16 by change harden-conversion-flow (phase 0): the previous record claimed no test
 # runner existed. It does — see the testing block below.
 # Updated 2026-10-18 by change editable-markdown-output: 7 suites / 71 passing (baseline 6/63 plus the new suite).
+# Updated 2026-10-21 by change two-column-layout: 8 suites / 82 passing (theme.test.js was uncounted before, and
+# this change added 2 assertions).
 
 schema: spec-driven
 strict_tdd: true
@@ -13,7 +15,7 @@ context: |
   Architecture: single global namespace window.Vitale. Each module is an IIFE exposing one Vitale.* key.
   Load order: <script> order in index.html is the only dependency injection (core -> extractors -> services -> panels -> main).
   Layout: index.html, styles.css, js/{core,extractors,*panels}.js, js/{platform,site-detector,mdream-loader,download-modal}.js, legacy in old/v1 and old/v2.
-  Testing: 7 Node test suites in tests/ (71 passing). Headless — the suites stub browser globals. DOM/focus behaviour needs a browser.
+  Testing: 8 Node test suites in tests/ (82 passing). Headless — the suites stub browser globals. DOM/focus behaviour needs a browser.
   Style: Spanish code comments with ASCII-box headers; escape all dynamic innerHTML values via Vitale.utils.esc().
 
 testing:
@@ -30,10 +32,10 @@ testing:
   linter: false
   type_checker: false
   formatter: false
-  suite_count: 7
-  baseline_passing: 71
+  suite_count: 8
+  baseline_passing: 82
   syntax_check: 'node --check <file>'
-  note: "Node is the runner (no package.json). 7 suites / 71 passing. The suites stub browser globals (global.alert, scrollIntoView, ...), so pure logic is testable headlessly; DOM and focus behaviour must be verified in a browser. No linter, type checker, formatter, or coverage tool exists — `node --check` is the only automated static gate."
+  note: "Node is the runner (no package.json). 8 suites / 82 passing. The suites stub browser globals (global.alert, scrollIntoView, ...), so pure logic is testable headlessly; DOM and focus behaviour must be verified in a browser. No linter, type checker, formatter, or coverage tool exists — `node --check` is the only automated static gate."
 
 rules:
   proposal:
@@ -56,7 +58,7 @@ rules:
     test_command: 'Get-ChildItem tests\*.test.js | ForEach-Object { node $_.FullName }'
     strict_tdd_note: "Write the failing test first (RED), then the fix (GREEN). Dead-code removal and pure refactors cannot produce a RED — declare those as refactors covered by the existing suite instead of inventing a failing test."
   verify:
-    - Run the full suite (baseline 71 passing; none may be removed)
+    - Run the full suite (baseline 82 passing; none may be removed)
     - DOM, focus, and screen-reader behaviour cannot be verified headlessly — verify those in a browser and document the steps
     test_command: 'Get-ChildItem tests\*.test.js | ForEach-Object { node $_.FullName }'
     build_command: ""
