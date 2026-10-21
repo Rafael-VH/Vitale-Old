@@ -48,7 +48,7 @@ descarga inicial del motor de conversión desde un CDN (ver
 2. <kbd>Ctrl</kbd>+<kbd>S</kbd> → en *Guardar como*, elige **"Página web, un solo
    archivo (*.mhtml)"**.
 3. Arrastra ese `.mhtml` a Vitale (o haz clic en el recuadro de carga).
-4. Pulsa **Convertir a Markdown** → **Descargar .md**.
+4. Pulsa **Convertir** → **Descargar**.
 
 ### Opción B — Copiar el código fuente
 
@@ -70,9 +70,9 @@ descarga inicial del motor de conversión desde un CDN (ver
    redirija a la app instalada.
 2. Abre **Chrome** o **Firefox**, pega la URL y pulsa Enter.
 3. Menú <kbd>⋮</kbd> → **Descargar página**. Se guardará como `.mhtml`.
-4. Vuelve a Vitale, pulsa **Ir a pegar HTML** y usa el recuadro de carga para
-   seleccionar el archivo descargado.
-5. Pulsa **Convertir a Markdown** → **Descargar .md**.
+4. Vuelve a Vitale y toca el panel de carga para seleccionar el archivo
+   descargado.
+5. Pulsa **Convertir** → **Descargar**.
 
 Si al pulsar *Intentar abrir* se abrió una app en lugar del navegador, ciérrala
 y usa *Copiar URL*: es el comportamiento documentado en la propia guía.
@@ -84,8 +84,8 @@ y usa *Copiar URL*: es el comportamiento documentado en la propia guía.
 1. Pulsa **Copiar URL**.
 2. Abre **Safari**, pega la URL y pulsa Enter.
 3. Botón **Compartir** → **Opciones** → **Página web** → **Guardar en Archivos**.
-4. Vuelve a Vitale, pulsa **Ir a pegar HTML** y usa el recuadro de carga.
-5. Pulsa **Convertir a Markdown** → **Descargar .md**.
+4. Vuelve a Vitale y toca el panel de carga.
+5. Pulsa **Convertir** → **Descargar**.
 
 ---
 
@@ -93,13 +93,15 @@ y usa *Copiar URL*: es el comportamiento documentado en la propia guía.
 
 ### Panel de conversión
 
-El panel principal. Acepta tres vías de entrada:
+El panel principal. Acepta dos vías de entrada:
 
 | Vía | Cómo |
 | --- | --- |
 | Arrastrar y soltar | Suelta el archivo sobre el recuadro punteado |
 | Selector nativo | Clic en el recuadro → se abre el selector del sistema |
-| Pegar | Botón **Pegar** (o pegado manual en el área de texto) |
+
+El campo de entrada también acepta texto pegado con el gesto nativo
+(<kbd>Ctrl</kbd>+<kbd>V</kbd>, o mantener pulsado en móvil).
 
 Al cargar un archivo, la app:
 
@@ -114,8 +116,8 @@ Se abre desde el botón **❔ ¿Cómo obtengo el archivo?**, bajo el recuadro de
 carga. Es una guía interactiva para el flujo manual: no descarga nada por sí
 sola, copia la URL, ofrece intentar abrirla, y muestra los pasos adaptados a tu
 plataforma (Android, iOS o escritorio). Se cierra con **Cerrar**, <kbd>Esc</kbd>
-o tocando fuera de la tarjeta. **Ir a pegar HTML** cierra la guía y baja hasta el
-recuadro de carga.
+o tocando fuera de la tarjeta. El botón **Ir a la conversión** cierra la guía y
+lleva el foco al campo de entrada.
 
 ---
 
@@ -125,7 +127,7 @@ El recuadro **Markdown resultante** es editable: puedes corregir el texto antes
 de descargarlo o copiarlo. Se guarda y se copia siempre lo que ves ahí, con tus
 correcciones incluidas.
 
-El botón **Descargar .md** abre un modal donde eliges el nombre del archivo:
+El botón **Descargar** abre un modal donde eliges el nombre del archivo:
 
 - Si cargaste un archivo, el nombre se propone a partir de él (sin la extensión
   original).

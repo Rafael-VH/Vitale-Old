@@ -58,22 +58,22 @@ Vitale.platform = (function(){
         step(1, 'Pulsa <b>"Copiar URL"</b>. Copia el enlace sin abrirlo, evitando que Android lo redirija a la app.') +
         step(2, 'Abre Chrome o Firefox, pega la URL y pulsa Enter.') +
         step(3, 'En el menú <kbd>⋮</kbd>, elige <b>"Descargar página"</b>. Se guardará como <code>.mhtml</code>.') +
-        step(4, 'Vuelve aquí, pulsa <b>"Ir a pegar HTML"</b> y usa el panel de carga para seleccionar el archivo.') +
-        step(5, 'Pulsa <b>"Convertir a Markdown"</b> y luego <b>"Descargar .md"</b>.');
+        step(4, 'Vuelve aquí y toca el panel de carga para seleccionar el archivo.') +
+        step(5, 'Pulsa <b>"Convertir"</b> y luego <b>"Descargar"</b>.');
     } else if(PLATFORM === 'ios'){
       el.innerHTML =
         step(1, 'Pulsa <b>"Copiar URL"</b>.') +
         step(2, 'Abre Safari, pega la URL y pulsa Enter.') +
         step(3, 'Compartir (⎋) → <b>"Opciones"</b> → <b>"Página web"</b> → <b>"Guardar en Archivos"</b>.') +
-        step(4, 'Vuelve aquí, pulsa <b>"Ir a pegar HTML"</b> y usa el panel de carga para seleccionar el archivo.') +
-        step(5, 'Pulsa <b>"Convertir a Markdown"</b> y luego <b>"Descargar .md"</b>.');
+        step(4, 'Vuelve aquí y toca el panel de carga para seleccionar el archivo.') +
+        step(5, 'Pulsa <b>"Convertir"</b> y luego <b>"Descargar"</b>.');
     } else {
       el.innerHTML =
         step(1, 'Pulsa <b>"Copiar URL"</b> o <b>"Intentar abrir"</b>.') +
         step(2, 'En la pestaña nueva, pulsa <kbd>Ctrl</kbd>+<kbd>U</kbd> (o clic derecho → <b>Ver código fuente</b>).') +
         step(3, 'Pulsa <kbd>Ctrl</kbd>+<kbd>A</kbd> → <kbd>Ctrl</kbd>+<kbd>C</kbd>.') +
-        step(4, 'Vuelve aquí, pulsa <b>"Ir a pegar HTML"</b> y pega con <kbd>Ctrl</kbd>+<kbd>V</kbd>.') +
-        step(5, 'Pulsa <b>"Convertir a Markdown"</b> y luego <b>"Descargar .md"</b>.');
+        step(4, 'Vuelve aquí y pega con <kbd>Ctrl</kbd>+<kbd>V</kbd> en el campo de entrada.') +
+        step(5, 'Pulsa <b>"Convertir"</b> y luego <b>"Descargar"</b>.');
     }
   }
 
