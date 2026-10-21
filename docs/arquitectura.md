@@ -35,7 +35,7 @@ repositorio y abrir `index.html` es todo lo que hace falta.
 ```text
 Vitale-Old/
 ├── index.html              # Shell único: barra de estado, panel y 2 modales
-├── styles.css              # Temas oscuro y claro (variables CSS + media queries)
+├── styles.css              # Temas oscuro y claro (tokens CSS + media queries + data-theme)
 ├── js/
 │   ├── main.js             # Bootstrap: carga el motor e inicializa los paneles
 │   ├── platform.js         # Detección Android / iOS / escritorio
@@ -167,8 +167,13 @@ Definido en `styles.css` con variables CSS en `:root`:
 - **Formas**: `--radius` (14px), `--radius-sm` (9px).
 - **Sombras**: `--shadow-sm`, `--shadow-lg`.
 
-El tema sigue al sistema operativo vía `@media (prefers-color-scheme)`: oscuro
-(el predeterminado) y claro. No hay conmutador manual ni persistencia.
+Tres modos de tema — **automático** (predeterminado), **claro** y **oscuro** —
+seleccionables con el botón de la barra de estado (`js/theme.js`). El modo se
+persiste en `localStorage` bajo la clave `vitale.theme` y se aplica antes del
+primer pintado mediante un script inline en `<head>`. En automático, el esquema
+sigue al sistema operativo vía `@media (prefers-color-scheme)`; los modos
+explícitos usan el atributo `data-theme` en `<html>`, con los mismos valores
+duplicados (el test de drift de `tests/theme.test.js` los mantiene idénticos).
 
 ### Responsive
 

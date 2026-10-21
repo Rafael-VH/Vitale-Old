@@ -18,8 +18,8 @@ seguridad. Sirve como registro honesto de los bordes del sistema.
 | **No descarga URLs** | CORS lo impide. La página debe guardarse a mano (ver [Guía de uso](guia-de-uso.md)) |
 | **Necesita internet al cargar** | El motor de conversión se descarga de un CDN la primera vez por sesión |
 | **Una conversión a la vez** | El botón se bloquea mientras procesa |
-| **Sin persistencia** | Recargar borra la entrada y la salida; no se usa `localStorage` |
-| **Tema sin conmutador** | Oscuro y claro siguen al sistema operativo (`prefers-color-scheme`); no hay conmutador manual ni persistencia |
+| **Sin persistencia de la sesión** | Recargar borra la entrada y la salida; `localStorage` solo guarda la preferencia de tema |
+| **Tema con tres modos** | Automático (sigue al sistema), claro u oscuro, elegible con el botón de la barra de estado y persistido en `localStorage` |
 | **Un archivo por vez** | No hay conversión por lotes |
 | **BOM no configurable** | La salida siempre lleva BOM UTF-8 (ver bug #10) |
 
