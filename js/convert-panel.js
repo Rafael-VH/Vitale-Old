@@ -22,7 +22,7 @@ Vitale.convertPanel = (function(){
   function markLoaded(fileName){
     uploadCard.classList.add('loaded');
     document.getElementById('uploadTitleText').innerHTML = '<span class="hl">Archivo cargado</span>';
-    document.getElementById('uploadSubText').textContent = 'Pulsa "Convertir a Markdown" para procesarlo';
+    document.getElementById('uploadSubText').textContent = 'Pulsa "Convertir" para procesarlo';
 
     const fn = document.getElementById('fileNameDisplay');
     fn.textContent = '📄 ' + fileName;
