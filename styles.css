@@ -621,9 +621,15 @@ code{
 /* Pantallas grandes: no hacen falta media queries propias. El contenedor
    es fluido hasta 1440px, así que crece solo con el viewport. */
 
-/* ---------- Tablet y móvil ---------- */
-@media(max-width:820px){
+/* ---------- Tablet y móvil ----------
+   El corte va a 700px, no a 820px: la orientación no es el criterio, el ANCHO
+   sí. Un celular acostado (~844px) tiene el alto justo para dos columnas y debe
+   conservarlas; uno parado (~390px) apila. 820px dejaba al acostado apilando
+   sin necesidad y devolvía el scroll que este cambio elimina. */
+@media(max-width:700px){
   .grid-2{grid-template-columns:1fr}
+  /* El indicador ↓ de arrastre no aplica a un puntero táctil: sobra. */
+  .upload-arrow{display:none}
   /* Las tablets son táctiles: todos los botones llegan a 44px */
   .btn{min-height:44px}
   .btn-sm{min-height:44px;padding:10px 14px}
@@ -634,8 +640,9 @@ code{
 @media(max-width:640px){
   body{padding:18px 14px 40px}
   .panel{padding:20px}
-  .upload-card{padding:26px 18px}
-  .upload-icon{width:56px;height:56px}
+  /* El card ya viene compacto; en móvil solo se centra el bloque de chips. */
+  .upload-card{padding:18px 14px}
+  .upload-formats{justify-content:center}
 
   /* Acciones principales: ancho completo, texto centrado */
   .btn-row.main-actions .btn{flex:1 1 100%;justify-content:center}
